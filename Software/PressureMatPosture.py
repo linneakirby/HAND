@@ -1,115 +1,86 @@
-import numpy as np
-import matplotlib.pyplot as plt
-import serial
+# Standard libraries
+import subprocess
 import sys
 import time
+
+# Third-party libraries
 import cv2
-import subprocess
-
-CONTOUR = True
-
-if CONTOUR:
-    plt.style.use('_mpl-gallery-nogrid')
-
-# This connects to serial
-
-ser = serial.Serial(
-    #You might change the PORT corresponding to the assigned by Operative System
-     #'/dev/cu.usbmodem101269201',  # raspberry: '/dev/ttyUSB1'
-    getPort(),
-    baudrate=115200,
-    timeout=0.1)
+import matplotlib.pyplot as plt
+import numpy as np
+import serial
 
 
 # Default parameters
 ROWS = 48  # Rows of the sensor
 COLS = 48  # Columns of the sensor
+FIG_PATH = './Results/contour.png'
+CONTOUR = True
+if CONTOUR:
+    plt.style.use('_mpl-gallery-nogrid')
 
-# Variable declaration
-# Initialize empty matrix, you ninny (above)
-Values = np.zeros((ROWS, COLS))
+class Mat:
+    def __init__(self, port):
+        self.ser = serial.Serial(
+            port,
+            baudrate=115200,
+            timeout=0.1)
+
+    def request_pressure_data(self):
+        data = 'R'
+        self.ser.write(data.encode())
+
+    def read_pressure_data(self):
+        matrix = np.zeros((ROWS, COLS), dtype=int)
+        _ = self.ser.read().decode('utf-8')
+        high_byte = self.ser.read()
+        low_byte = self.ser.read()
+        high = int.from_bytes(high_byte, 'big')
+        low = int.from_bytes(low_byte, 'big')
+        num_points = ((high << 8) | low)
+        _ = self.ser.read().decode('utf-8')
+        _ = self.ser.read().decode('utf-8')
+        x = y = n = 0
+        while n < num_points:
+            x = self.ser.read()
+            y = self.ser.read()
+            x = int.from_bytes(x, 'big')
+            y = int.from_bytes(y, 'big')
+            high_byte = self.ser.read()
+            low_byte = self.ser.read()
+            high = int.from_bytes(high_byte, 'big')
+            low = int.from_bytes(low_byte, 'big')
+            val = ((high << 8) | low)
+            matrix[y][x] = val
+            n += 1
+        return matrix
+
+    def get_pressure_data(self):
+        xbyte = ''
+        if self.ser.in_waiting > 0:
+            xbyte = self.ser.read().decode('utf-8')
+            if(xbyte == 'N'):
+                return self.read_pressure_map()
+            else:
+                self.ser.flush()
+
+    def get_pressure_map(self):
+        self.request_pressure_data()
+        return self.get_pressure_data()
+
+    def print_matrix(self, data):
+        for i in range(COLS):
+            tmp = ''
+            for j in range(ROWS):
+                tmp = tmp + hex(int(data[i][j]))[-1]
+            print(tmp)
+        print('\n')
 
 def getPort():
+    # This is how serial ports are organized on macOS.
+    # You may need to change it for other operating systems.
     print("Getting port")
-    PORT = serial.tools.list_ports.grep("\/dev\/(cu|tty).usbmodem[0-9]{9}")
-    PORT.stdout
-    return PORT
+    return serial.tools.list_ports.grep("\/dev\/(cu|tty).usbmodem[0-9]{9}")
 
-def RequestPressureMap():
-    data = "R"
-    ser.write(data.encode())
-
-
-def activePointsReceiveMap():
-    global Values
-    matrix = np.zeros((ROWS, COLS), dtype=int)
-
-    xbyte = ser.read().decode('utf-8')
-
-    HighByte = ser.read()
-    LowByte = ser.read()
-    high = int.from_bytes(HighByte, 'big')
-    low = int.from_bytes(LowByte, 'big')
-    nPoints = ((high << 8) | low)
-
-    xbyte = ser.read().decode('utf-8')
-    xbyte = ser.read().decode('utf-8')
-    x = 0
-    y = 0
-    n = 0
-    while(n < nPoints):
-        x = ser.read()
-        y = ser.read()
-        x = int.from_bytes(x, 'big')
-        y = int.from_bytes(y, 'big')
-        HighByte = ser.read()
-        LowByte = ser.read()
-        high = int.from_bytes(HighByte, 'big')
-        low = int.from_bytes(LowByte, 'big')
-        val = ((high << 8) | low)
-        matrix[y][x] = val
-        n += 1
-    Values = matrix
- 
-def activePointsGetMap():
-    xbyte = ''
-    if ser.in_waiting > 0:
-        try:
-            xbyte = ser.read().decode('utf-8')
-        except Exception:
-            print("Exception")
-        if(xbyte == 'N'):
-            activePointsReceiveMap()
-        else:
-            ser.flush()
-
-class Null:
-    def write(self, text):
-        pass
-
-    def flush(self):
-        pass
-
-def getMatrix():
-    RequestPressureMap()
-    activePointsGetMap()
-
-def printMatrix():
-    tmparray = np.zeros((ROWS, COLS))
-    for i in range(COLS):
-        tmp = ""
-        for j in range(ROWS):
-            tmp = int(Values[i][j])
-            tmparray[i][j] = tmp
-    if CONTOUR:
-        generatePlot(tmparray)
-    print("\n")
-    for i in range(COLS):
-        tmp = ""
-        for j in range(ROWS):
-            tmp = tmp +   hex(int(Values[i][j]))[-1]
-        print(tmp)
-    print("\n")
 
 def generatePlot(Z):
     plt.ion()
@@ -118,17 +89,13 @@ def generatePlot(Z):
     ax.contourf(np.arange(0, ROWS), np.arange(0, COLS), Z, levels=7, cmap="nipy_spectral")
 
     plt.draw()
-    plt.savefig('./Results/contour.png')
+    plt.savefig(FIG_PATH)
     plt.pause(0.0001)
     plt.clf()
 
-def printArray(A):
-    for item in A:
-        print(item, sep="", end="")
-
 def getBlobs():
     # Read image
-    im = cv2.imread("./Results/contour.png", cv2.IMREAD_GRAYSCALE)
+    im = cv2.imread(FIG_PATH, cv2.IMREAD_GRAYSCALE)
 
     # Setup SimpleBlobDetector parameters.
     params = cv2.SimpleBlobDetector_Params()
@@ -179,7 +146,7 @@ def getBlobs():
 
 def getBlobs2():
     # read image through command line
-    img = cv2.imread("./Results/contour.png")
+    img = cv2.imread(FIG_PATH)
 
     # convert the image to grayscale
     gray_image = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
@@ -206,16 +173,12 @@ def getBlobs2():
         # display the image
         cv2.imshow("Image", img)
         cv2.waitKey(0)
+
+def main():
+    mat = Mat(getPort())
+    while True:
+        data = mat.get_pressure_map()
+        mat.print_matrix(data)
    
-#Main
-
-# if __name__ == 'main':
-
-while True:
-    pass
-    getMatrix() # This function requests and parses a pressure map in the variable Values    
-    printMatrix()
-    getBlobs()
-    # time.sleep(1)
-
-
+if __name__ == 'main':
+    main()
