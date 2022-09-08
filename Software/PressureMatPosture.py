@@ -7,7 +7,7 @@ import time
 import cv2
 import matplotlib.pyplot as plt
 import numpy as np
-import serial
+import serial.tools.list_ports
 
 
 # Default parameters
@@ -24,71 +24,64 @@ class Mat:
             port,
             baudrate=115200,
             timeout=0.1)
+        self.Values = np.zeros((ROWS, COLS))
 
-    def RequestPressureMap():
+    def RequestPressureMap(self):
         data = "R"
-        ser.write(data.encode())
+        self.ser.write(data.encode())
 
-    def activePointsReceiveMap():
-        global Values
+    def activePointsReceiveMap(self):
         matrix = np.zeros((ROWS, COLS), dtype=int)
 
-        xbyte = ser.read().decode('utf-8')
+        xbyte = self.ser.read().decode('utf-8')
 
-        HighByte = ser.read()
-        LowByte = ser.read()
+        HighByte = self.ser.read()
+        LowByte = self.ser.read()
         high = int.from_bytes(HighByte, 'big')
         low = int.from_bytes(LowByte, 'big')
         nPoints = ((high << 8) | low)
 
-        xbyte = ser.read().decode('utf-8')
-        xbyte = ser.read().decode('utf-8')
+        xbyte = self.ser.read().decode('utf-8')
+        xbyte = self.ser.read().decode('utf-8')
         x = 0
         y = 0
         n = 0
         while(n < nPoints):
-            x = ser.read()
-            y = ser.read()
+            x = self.ser.read()
+            y = self.ser.read()
             x = int.from_bytes(x, 'big')
             y = int.from_bytes(y, 'big')
-            HighByte = ser.read()
-            LowByte = ser.read()
+            HighByte = self.ser.read()
+            LowByte = self.ser.read()
             high = int.from_bytes(HighByte, 'big')
             low = int.from_bytes(LowByte, 'big')
             val = ((high << 8) | low)
             matrix[y][x] = val
             n += 1
-        Values = matrix
+        self.Values = matrix
     
-    def activePointsGetMap():
+    def activePointsGetMap(self):
         xbyte = ''
-        if ser.in_waiting > 0:
+        if self.ser.in_waiting > 0:
             try:
-                xbyte = ser.read().decode('utf-8')
+                xbyte = self.ser.read().decode('utf-8')
             except Exception:
                 print("Exception")
             if(xbyte == 'N'):
-                activePointsReceiveMap()
+                self.activePointsReceiveMap()
             else:
-                ser.flush()
+                self.ser.flush()
 
-    class Null:
-        def write(self, text):
-            pass
+    def getMatrix(self):
+        self.RequestPressureMap()
+        self.activePointsGetMap()
 
-        def flush(self):
-            pass
-
-    def getMatrix():
-        RequestPressureMap()
-        activePointsGetMap()
-
-    def printMatrix():
+    def printMatrix(self):
         tmparray = np.zeros((ROWS, COLS))
         for i in range(COLS):
             tmp = ""
             for j in range(ROWS):
-                tmp = int(Values[i][j])
+                tmp = int(self.Values[i][j])
                 tmparray[i][j] = tmp
         if CONTOUR:
             generatePlot(tmparray)
@@ -96,7 +89,7 @@ class Mat:
         for i in range(COLS):
             tmp = ""
             for j in range(ROWS):
-                tmp = tmp +   hex(int(Values[i][j]))[-1]
+                tmp = tmp +   hex(int(self.Values[i][j]))[-1]
             print(tmp)
         print("\n")
 
