@@ -25,55 +25,81 @@ class Mat:
             baudrate=115200,
             timeout=0.1)
 
-    def request_pressure_data(self):
-        data = 'R'
-        self.ser.write(data.encode())
+    def RequestPressureMap():
+        data = "R"
+        ser.write(data.encode())
 
-    def read_pressure_data(self):
+    def activePointsReceiveMap():
+        global Values
         matrix = np.zeros((ROWS, COLS), dtype=int)
-        _ = self.ser.read().decode('utf-8')
-        high_byte = self.ser.read()
-        low_byte = self.ser.read()
-        high = int.from_bytes(high_byte, 'big')
-        low = int.from_bytes(low_byte, 'big')
-        num_points = ((high << 8) | low)
-        _ = self.ser.read().decode('utf-8')
-        _ = self.ser.read().decode('utf-8')
-        x = y = n = 0
-        while n < num_points:
-            x = self.ser.read()
-            y = self.ser.read()
+
+        xbyte = ser.read().decode('utf-8')
+
+        HighByte = ser.read()
+        LowByte = ser.read()
+        high = int.from_bytes(HighByte, 'big')
+        low = int.from_bytes(LowByte, 'big')
+        nPoints = ((high << 8) | low)
+
+        xbyte = ser.read().decode('utf-8')
+        xbyte = ser.read().decode('utf-8')
+        x = 0
+        y = 0
+        n = 0
+        while(n < nPoints):
+            x = ser.read()
+            y = ser.read()
             x = int.from_bytes(x, 'big')
             y = int.from_bytes(y, 'big')
-            high_byte = self.ser.read()
-            low_byte = self.ser.read()
-            high = int.from_bytes(high_byte, 'big')
-            low = int.from_bytes(low_byte, 'big')
+            HighByte = ser.read()
+            LowByte = ser.read()
+            high = int.from_bytes(HighByte, 'big')
+            low = int.from_bytes(LowByte, 'big')
             val = ((high << 8) | low)
             matrix[y][x] = val
             n += 1
-        return matrix
-
-    def get_pressure_data(self):
+        Values = matrix
+    
+    def activePointsGetMap():
         xbyte = ''
-        if self.ser.in_waiting > 0:
-            xbyte = self.ser.read().decode('utf-8')
+        if ser.in_waiting > 0:
+            try:
+                xbyte = ser.read().decode('utf-8')
+            except Exception:
+                print("Exception")
             if(xbyte == 'N'):
-                return self.read_pressure_map()
+                activePointsReceiveMap()
             else:
-                self.ser.flush()
+                ser.flush()
 
-    def get_pressure_map(self):
-        self.request_pressure_data()
-        return self.get_pressure_data()
+    class Null:
+        def write(self, text):
+            pass
 
-    def print_matrix(self, data):
+        def flush(self):
+            pass
+
+    def getMatrix():
+        RequestPressureMap()
+        activePointsGetMap()
+
+    def printMatrix():
+        tmparray = np.zeros((ROWS, COLS))
         for i in range(COLS):
-            tmp = ''
+            tmp = ""
             for j in range(ROWS):
-                tmp = tmp + hex(int(data[i][j]))[-1]
+                tmp = int(Values[i][j])
+                tmparray[i][j] = tmp
+        if CONTOUR:
+            generatePlot(tmparray)
+        print("\n")
+        for i in range(COLS):
+            tmp = ""
+            for j in range(ROWS):
+                tmp = tmp +   hex(int(Values[i][j]))[-1]
             print(tmp)
-        print('\n')
+        print("\n")
+
 
 def getPort():
     # This is how serial ports are organized on macOS.
