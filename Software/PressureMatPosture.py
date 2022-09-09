@@ -7,7 +7,7 @@ import time
 import cv2
 import matplotlib.pyplot as plt
 import numpy as np
-import serial
+import serial.tools.list_ports
 
 
 # Default parameters
@@ -24,56 +24,75 @@ class Mat:
             port,
             baudrate=115200,
             timeout=0.1)
+        self.Values = np.zeros((ROWS, COLS))
 
-    def request_pressure_data(self):
-        data = 'R'
+    def RequestPressureMap(self):
+        data = "R"
         self.ser.write(data.encode())
 
-    def read_pressure_data(self):
+    def activePointsReceiveMap(self):
         matrix = np.zeros((ROWS, COLS), dtype=int)
-        _ = self.ser.read().decode('utf-8')
-        high_byte = self.ser.read()
-        low_byte = self.ser.read()
-        high = int.from_bytes(high_byte, 'big')
-        low = int.from_bytes(low_byte, 'big')
-        num_points = ((high << 8) | low)
-        _ = self.ser.read().decode('utf-8')
-        _ = self.ser.read().decode('utf-8')
-        x = y = n = 0
-        while n < num_points:
+
+        xbyte = self.ser.read().decode('utf-8')
+
+        HighByte = self.ser.read()
+        LowByte = self.ser.read()
+        high = int.from_bytes(HighByte, 'big')
+        low = int.from_bytes(LowByte, 'big')
+        nPoints = ((high << 8) | low)
+
+        xbyte = self.ser.read().decode('utf-8')
+        xbyte = self.ser.read().decode('utf-8')
+        x = 0
+        y = 0
+        n = 0
+        while(n < nPoints):
             x = self.ser.read()
             y = self.ser.read()
             x = int.from_bytes(x, 'big')
             y = int.from_bytes(y, 'big')
-            high_byte = self.ser.read()
-            low_byte = self.ser.read()
-            high = int.from_bytes(high_byte, 'big')
-            low = int.from_bytes(low_byte, 'big')
+            HighByte = self.ser.read()
+            LowByte = self.ser.read()
+            high = int.from_bytes(HighByte, 'big')
+            low = int.from_bytes(LowByte, 'big')
             val = ((high << 8) | low)
             matrix[y][x] = val
             n += 1
-        return matrix
-
-    def get_pressure_data(self):
+        self.Values = matrix
+    
+    def activePointsGetMap(self):
         xbyte = ''
         if self.ser.in_waiting > 0:
-            xbyte = self.ser.read().decode('utf-8')
+            try:
+                xbyte = self.ser.read().decode('utf-8')
+            except Exception:
+                print("Exception")
             if(xbyte == 'N'):
-                return self.read_pressure_map()
+                self.activePointsReceiveMap()
             else:
                 self.ser.flush()
 
-    def get_pressure_map(self):
-        self.request_pressure_data()
-        return self.get_pressure_data()
+    def getMatrix(self):
+        self.RequestPressureMap()
+        self.activePointsGetMap()
 
-    def print_matrix(self, data):
+    def printMatrix(self):
+        tmparray = np.zeros((ROWS, COLS))
         for i in range(COLS):
-            tmp = ''
+            tmp = ""
             for j in range(ROWS):
-                tmp = tmp + hex(int(data[i][j]))[-1]
+                tmp = int(self.Values[i][j])
+                tmparray[i][j] = tmp
+        if CONTOUR:
+            generatePlot(tmparray)
+        print("\n")
+        for i in range(COLS):
+            tmp = ""
+            for j in range(ROWS):
+                tmp = tmp +   hex(int(self.Values[i][j]))[-1]
             print(tmp)
-        print('\n')
+        print("\n")
+
 
 def getPort():
     # This is how serial ports are organized on macOS.
