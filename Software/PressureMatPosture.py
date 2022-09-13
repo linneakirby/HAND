@@ -13,6 +13,7 @@ import serial.tools.list_ports
 # Default parameters
 ROWS = 48  # Rows of the sensor
 COLS = 48  # Columns of the sensor
+DEFAULT_PORT = '/dev/cu.usbmodem101269201'
 FIG_PATH = './Results/contour.png'
 CONTOUR = True
 if CONTOUR:
@@ -63,12 +64,9 @@ class Mat:
     def activePointsGetMap(self):
         xbyte = ''
         if self.ser.in_waiting > 0:
-            try:
-                xbyte = self.ser.read().decode('utf-8')
-            except Exception:
-                print("Exception")
-            if(xbyte == 'N'):
-                self.activePointsReceiveMap()
+            xbyte = self.ser.read().decode('utf-8')
+            if xbyte == 'N':
+                return self.read_pressure_data()
             else:
                 self.ser.flush()
 
@@ -76,29 +74,21 @@ class Mat:
         self.RequestPressureMap()
         self.activePointsGetMap()
 
-    def printMatrix(self):
-        tmparray = np.zeros((ROWS, COLS))
-        for i in range(COLS):
-            tmp = ""
-            for j in range(ROWS):
-                tmp = int(self.Values[i][j])
-                tmparray[i][j] = tmp
-        if CONTOUR:
-            generatePlot(tmparray)
-        print("\n")
-        for i in range(COLS):
-            tmp = ""
-            for j in range(ROWS):
-                tmp = tmp +   hex(int(self.Values[i][j]))[-1]
-            print(tmp)
-        print("\n")
-
+    def print_matrix(self, data):
+        print(data)
+        # for i in range(COLS):
+        #     tmp = ''
+        #     for j in range(ROWS):
+        #         tmp = tmp + hex(int(data[i][j]))[-1]
+        #     print(tmp)
+        # print('\n')
 
 def getPort():
     # This is how serial ports are organized on macOS.
     # You may need to change it for other operating systems.
-    print("Getting port")
-    return serial.tools.list_ports.grep("\/dev\/(cu|tty).usbmodem[0-9]{9}")
+    print("Getting ports")
+    ports = list(serial.tools.list_ports.grep("\/dev\/(cu|tty).usbmodem[0-9]{9}"))
+    return ports[0].device
 
 
 def generatePlot(Z):
@@ -194,10 +184,12 @@ def getBlobs2():
         cv2.waitKey(0)
 
 def main():
-    mat = Mat(getPort())
+    mat = Mat(DEFAULT_PORT)
     while True:
         data = mat.get_pressure_map()
-        mat.print_matrix(data)
-   
-if __name__ == 'main':
+        print(data)
+        # mat.print_matrix(data)
+
+if __name__ == '__main__':
+    print("main")
     main()
