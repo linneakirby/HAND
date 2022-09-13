@@ -8,6 +8,14 @@ import cv2
 import matplotlib.pyplot as plt
 import numpy as np
 import serial.tools.list_ports
+import skimage
+
+from skimage.io import imread, imshow
+from skimage.color import rgb2gray, rgb2hsv
+from skimage.measure import label, regionprops, regionprops_table
+from skimage.filters import threshold_otsu
+from scipy.ndimage import median_filter
+from matplotlib.patches import Rectangle
 
 
 # Default parameters
@@ -98,7 +106,7 @@ def getPort():
     # This is how serial ports are organized on macOS.
     # You may need to change it for other operating systems.
     print("Getting ports")
-    ports = list(serial.tools.list_ports.grep("\/dev\/(cu|tty).usbmodem[0-9]{9}"))
+    ports = list(serial.tools.list_ports.grep("\/dev\/cu.usbmodem[0-9]{9}"))
     return ports[0].device
 
 
@@ -109,9 +117,9 @@ def generatePlot(Z):
     ax.contourf(np.arange(0, ROWS), np.arange(0, COLS), Z, levels=7, cmap="nipy_spectral")
 
     plt.draw()
-    plt.savefig(FIG_PATH)
-    plt.pause(0.0001)
-    plt.clf()
+    # plt.savefig(FIG_PATH)
+    # plt.pause(0.0001)
+    # plt.clf()
 
 def getBlobs():
     # Read image
@@ -194,6 +202,22 @@ def getBlobs2():
         cv2.imshow("Image", img)
         cv2.waitKey(0)
 
+def generateMask(path):
+    image = imread(path)
+    imshow(image);
+
+    hsv = rgb2hsv(image[:,:,0:3])
+    plt.imshow(hsv[:,:,0], cmap='hsv')
+
+    lower_mask = hsv [:,:,2] > 0.80 #2 represents blue in rgb colorspace
+    upper_mask = hsv [:,:,2] <= 1.00
+    mask = upper_mask*lower_mask
+    red = image[:,:,0]*mask
+    green = image[:,:,1]*mask
+    blue = image[:,:,2]*mask
+    image_mask = np.dstack((red,green,blue))
+    imshow(image_mask)
+
 def main():
     mat = Mat(getPort())
     while True:
@@ -204,5 +228,4 @@ def main():
         time.sleep(0.1)
 
 if __name__ == '__main__':
-    print("main")
     main()
