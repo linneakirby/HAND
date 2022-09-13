@@ -13,7 +13,7 @@ import serial.tools.list_ports
 # Default parameters
 ROWS = 48  # Rows of the sensor
 COLS = 48  # Columns of the sensor
-DEFAULT_PORT = '/dev/cu.usbmodem101269201'
+DEFAULT_PORT = '/dev/cu.usbmodem104742601'
 FIG_PATH = './Results/contour.png'
 CONTOUR = True
 if CONTOUR:
@@ -64,24 +64,35 @@ class Mat:
     def activePointsGetMap(self):
         xbyte = ''
         if self.ser.in_waiting > 0:
-            xbyte = self.ser.read().decode('utf-8')
-            if xbyte == 'N':
-                return self.read_pressure_data()
+            try:
+                xbyte = self.ser.read().decode('utf-8')
+            except Exception:
+                print("Exception")
+            if(xbyte == 'N'):
+                self.activePointsReceiveMap()
             else:
                 self.ser.flush()
 
     def getMatrix(self):
         self.RequestPressureMap()
         self.activePointsGetMap()
+    
+    def plotMatrix(self):
+        tmparray = np.zeros((ROWS, COLS))
+        for i in range(COLS):
+            tmp = ""
+            for j in range(ROWS):
+                tmp = int(self.Values[i][j])
+                tmparray[i][j] = tmp
+        generatePlot(tmparray)
 
-    def print_matrix(self, data):
-        print(data)
-        # for i in range(COLS):
-        #     tmp = ''
-        #     for j in range(ROWS):
-        #         tmp = tmp + hex(int(data[i][j]))[-1]
-        #     print(tmp)
-        # print('\n')
+    def printMatrix(self):
+        for i in range(COLS):
+            tmp = ""
+            for j in range(ROWS):
+                tmp = tmp +   hex(int(self.Values[i][j]))[-1]
+            print(tmp)
+        print("\n")
 
 def getPort():
     # This is how serial ports are organized on macOS.
@@ -184,11 +195,13 @@ def getBlobs2():
         cv2.waitKey(0)
 
 def main():
-    mat = Mat(DEFAULT_PORT)
+    mat = Mat(getPort())
     while True:
-        data = mat.get_pressure_map()
-        print(data)
-        # mat.print_matrix(data)
+        mat.getMatrix()
+        mat.printMatrix()
+        if CONTOUR:
+            mat.plotMatrix()
+        time.sleep(0.1)
 
 if __name__ == '__main__':
     print("main")
