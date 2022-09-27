@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+source "$(pwd)/env/bin/activate"
+ipython -i pressure_mat_interactive.py

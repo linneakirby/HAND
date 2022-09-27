@@ -114,7 +114,7 @@ def generatePlot(Z):
     # plt.pause(0.0001)
     # plt.clf()
 
-#run k clustering on self.Values
+#run k clustering on self.Values: https://realpython.com/k-means-clustering-python/#how-to-perform-k-means-clustering-in-python
 #visualize which points are in which cluster
 #then can do center of mass calculation: https://stackoverflow.com/questions/29356825/python-calculate-center-of-mass
 

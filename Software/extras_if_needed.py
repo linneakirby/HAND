@@ -92,6 +92,7 @@ def getBlobs2():
         cv2.waitKey(0)
 
 
+# adapted from https://towardsdatascience.com/image-processing-with-python-blob-detection-using-scikit-image-5df9a8380ade
 def generateMask(path):
     image = imread(path)
     imshow(image);
