@@ -1,4 +1,4 @@
-from PressureMatPosture import *
+from pressure_mat_posture import *
 import numpy as np
 
 hands_array = np.load("./Testing/hands.npy")
