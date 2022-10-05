@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import serial.tools.list_ports
 import skimage
-
+from sklearn.cluster import KMeans
 
 
 # Default parameters
@@ -28,11 +28,11 @@ class Mat:
             timeout=0.1)
         self.Values = np.zeros((ROWS, COLS))
 
-    def RequestPressureMap(self):
+    def request_pressure_map(self):
         data = "R"
         self.ser.write(data.encode())
 
-    def activePointsReceiveMap(self):
+    def active_points_receive_map(self):
         matrix = np.zeros((ROWS, COLS), dtype=int)
 
         xbyte = self.ser.read().decode('utf-8')
@@ -62,7 +62,7 @@ class Mat:
             n += 1
         self.Values = matrix
     
-    def activePointsGetMap(self):
+    def active_points_get_map(self):
         xbyte = ''
         if self.ser.in_waiting > 0:
             try:
@@ -70,24 +70,29 @@ class Mat:
             except Exception:
                 print("Exception")
             if(xbyte == 'N'):
-                self.activePointsReceiveMap()
+                self.active_points_receive_map()
             else:
                 self.ser.flush()
 
-    def getMatrix(self):
-        self.RequestPressureMap()
-        self.activePointsGetMap()
+    def get_matrix(self):
+        self.request_pressure_map()
+        self.active_points_get_map()
     
-    def plotMatrix(self):
+    def ndarray_to_array(self):
         tmparray = np.zeros((ROWS, COLS))
         for i in range(COLS):
             tmp = ""
             for j in range(ROWS):
                 tmp = int(self.Values[i][j])
                 tmparray[i][j] = tmp
+        return tmparray
+
+    def plot_matrix(self):
+        tmparray = self.ndarray_to_array()
+        self.k_cluster(tmparray)
         generatePlot(tmparray)
 
-    def printMatrix(self):
+    def print_matrix(self):
         for i in range(COLS):
             tmp = ""
             for j in range(ROWS):
@@ -95,13 +100,17 @@ class Mat:
             print(tmp)
         print("\n")
 
+    #run k clustering on self.Values: https://realpython.com/k-means-clustering-python/#how-to-perform-k-means-clustering-in-python
+    def k_cluster(self):
+        kmeans = KMeans(init="k-means++", n_clusters=2, n_init=10, max_iter=300, random_state=42)
+        kmeans.fit(self.Values)
+
 def getPort():
     # This is how serial ports are organized on macOS.
     # You may need to change it for other operating systems.
     print("Getting ports")
     ports = list(serial.tools.list_ports.grep("\/dev\/cu.usbmodem[0-9]{9}"))
     return ports[0].device
-
 
 def generatePlot(Z):
     plt.ion()
@@ -114,7 +123,7 @@ def generatePlot(Z):
     # plt.pause(0.0001)
     # plt.clf()
 
-#run k clustering on self.Values: https://realpython.com/k-means-clustering-python/#how-to-perform-k-means-clustering-in-python
+
 #visualize which points are in which cluster
 #then can do center of mass calculation: https://stackoverflow.com/questions/29356825/python-calculate-center-of-mass
 
@@ -122,11 +131,11 @@ def generatePlot(Z):
 def main():
     mat = Mat(getPort())
     while True:
-        mat.getMatrix()
+        mat.get_matrix()
         if not CONTOUR:
-            mat.printMatrix()
+            mat.print_matrix()
         if CONTOUR:
-            mat.plotMatrix()
+            mat.plot_matrix()
         time.sleep(0.1)
 
 if __name__ == '__main__':

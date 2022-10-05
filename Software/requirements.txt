@@ -3,3 +3,4 @@ pyserial
 matplotlib
 opencv-python
 scikit-image
+sklearn
