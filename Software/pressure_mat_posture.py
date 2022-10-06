@@ -9,6 +9,7 @@ import numpy as np
 import serial.tools.list_ports
 import skimage
 from sklearn.cluster import KMeans
+from sklearn.decomposition import PCA
 
 
 # Default parameters
@@ -78,19 +79,11 @@ class Mat:
         self.request_pressure_map()
         self.active_points_get_map()
     
-    def ndarray_to_array(self):
-        tmparray = np.zeros((ROWS, COLS))
-        for i in range(COLS):
-            tmp = ""
-            for j in range(ROWS):
-                tmp = int(self.Values[i][j])
-                tmparray[i][j] = tmp
-        return tmparray
 
     def plot_matrix(self):
-        tmparray = self.ndarray_to_array()
-        self.k_cluster(tmparray)
-        generatePlot(tmparray)
+        two_d_array = ndarray_to_2darray(self.Values)
+        k_means(self.Values)
+        generate_plot(two_d_array)
 
     def print_matrix(self):
         for i in range(COLS):
@@ -100,19 +93,34 @@ class Mat:
             print(tmp)
         print("\n")
 
-    #run k clustering on self.Values: https://realpython.com/k-means-clustering-python/#how-to-perform-k-means-clustering-in-python
-    def k_cluster(self):
-        kmeans = KMeans(init="k-means++", n_clusters=2, n_init=10, max_iter=300, random_state=42)
-        kmeans.fit(self.Values)
 
-def getPort():
+
+def get_port():
     # This is how serial ports are organized on macOS.
     # You may need to change it for other operating systems.
     print("Getting ports")
     ports = list(serial.tools.list_ports.grep("\/dev\/cu.usbmodem[0-9]{9}"))
     return ports[0].device
 
-def generatePlot(Z):
+def ndarray_to_2darray(nda, preserve_values=True):
+    two_d_array = np.zeros((ROWS, COLS))
+    for i in range(COLS):
+        tmp = ""
+        for j in range(ROWS):
+            if(preserve_values):
+                tmp = int(nda[i][j])
+                two_d_array[i][j] = tmp
+            else:
+                if(int(nda[i][j]) != 0):
+                    two_d_array[i][j] = 1
+    return two_d_array
+
+#run k clustering on self.Values: https://realpython.com/k-means-clustering-python/#how-to-perform-k-means-clustering-in-python
+def k_means(karray, clusters=2):
+    kmeans = KMeans(init="k-means++", n_clusters=clusters, n_init=10, max_iter=300, random_state=42)
+    return kmeans.fit(karray)
+
+def generate_plot(Z):
     plt.ion()
     fig, ax = plt.subplots(figsize=(5,5))
 
@@ -123,13 +131,38 @@ def generatePlot(Z):
     # plt.pause(0.0001)
     # plt.clf()
 
+def generate_kmeans_plot(X, clusters=2):
+    km = KMeans(
+    n_clusters=clusters, init='random',
+    n_init=10, max_iter=300, 
+    tol=1e-04, random_state=0
+    )
+    y_km = km.fit_predict(X)
+
+    plt.scatter(
+        X[y_km == 0, 0], X[y_km == 0, 1],
+        s=50, c='lightgreen',
+        marker='s', edgecolor='black',
+        label='cluster 1'
+    )
+
+    plt.scatter(
+        X[y_km == 1, 0], X[y_km == 1, 1],
+        s=50, c='orange',
+        marker='o', edgecolor='black',
+        label='cluster 2'
+    )
+
+    plt.legend(scatterpoints=1)
+    plt.grid()
+    plt.show()
 
 #visualize which points are in which cluster
 #then can do center of mass calculation: https://stackoverflow.com/questions/29356825/python-calculate-center-of-mass
 
 
 def main():
-    mat = Mat(getPort())
+    mat = Mat(get_port())
     while True:
         mat.get_matrix()
         if not CONTOUR:
