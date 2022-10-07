@@ -11,6 +11,7 @@ import skimage
 from sklearn.cluster import KMeans
 from sklearn.decomposition import PCA
 
+np.set_printoptions(threshold=sys.maxsize)
 
 # Default parameters
 ROWS = 48  # Rows of the sensor
@@ -115,10 +116,42 @@ def ndarray_to_2darray(nda, preserve_values=True):
                     two_d_array[i][j] = 1
     return two_d_array
 
+def remove_empty_points(nda):
+    tda = [[],[]]
+    for i in range(48):
+        for j in range(48):
+            if(int(nda[i][j]) != 0):
+                tda[0].append(i)
+                tda[1].append(j)
+    return tda
+
 #run k clustering on self.Values: https://realpython.com/k-means-clustering-python/#how-to-perform-k-means-clustering-in-python
 def k_means(karray, clusters=2):
     kmeans = KMeans(init="k-means++", n_clusters=clusters, n_init=10, max_iter=300, random_state=42)
     return kmeans.fit(karray)
+
+def generate_kmeans_plot(karray, clusters=2):
+    tda = remove_empty_points(karray)
+    km = k_means(tda)
+    y_km = km.fit_predict(tda)
+
+    plt.scatter(
+        tda[0], tda[1],
+        s=50, c='lightgreen',
+        marker='v', edgecolor='black',
+        label='cluster 1'
+    )
+
+    # plt.scatter(
+    #     tda[y_km == 1, 0], tda[y_km == 1, 1],
+    #     s=50, c='orange',
+    #     marker='o', edgecolor='black',
+    #     label='cluster 2'
+    # )
+
+    plt.legend(scatterpoints=1)
+    plt.grid()
+    plt.show()
 
 def generate_plot(Z):
     plt.ion()
@@ -131,31 +164,6 @@ def generate_plot(Z):
     # plt.pause(0.0001)
     # plt.clf()
 
-def generate_kmeans_plot(X, clusters=2):
-    km = KMeans(
-    n_clusters=clusters, init='random',
-    n_init=10, max_iter=300, 
-    tol=1e-04, random_state=0
-    )
-    y_km = km.fit_predict(X)
-
-    plt.scatter(
-        X[y_km == 0, 0], X[y_km == 0, 1],
-        s=50, c='lightgreen',
-        marker='s', edgecolor='black',
-        label='cluster 1'
-    )
-
-    plt.scatter(
-        X[y_km == 1, 0], X[y_km == 1, 1],
-        s=50, c='orange',
-        marker='o', edgecolor='black',
-        label='cluster 2'
-    )
-
-    plt.legend(scatterpoints=1)
-    plt.grid()
-    plt.show()
 
 #visualize which points are in which cluster
 #then can do center of mass calculation: https://stackoverflow.com/questions/29356825/python-calculate-center-of-mass
