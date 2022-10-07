@@ -10,3 +10,6 @@ Firmware for the gloves can be found in the "Software/Arduino" folder.
 
 ## Mat Software
 The mat software is written in Python3 and can be found in the "Software" folder as "pressure_mat_posture.py". A list of dependencies can be found in the "requirements.txt" file in the same folder.
+
+### Testing
+The mat software can be tested by running the "start" shell script, which allows the user to interact with a preloaded snapshot of the mat output.
