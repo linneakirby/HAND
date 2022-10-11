@@ -22,6 +22,7 @@ FIG_PATH = './Results/contour.png'
 CONSOLE = False
 CONTOUR = False
 SCATTER = True
+HEAT = False
 
 if CONTOUR:
     plt.style.use('_mpl-gallery-nogrid')
@@ -84,15 +85,22 @@ class Mat:
         self.request_pressure_map()
         self.active_points_get_map()
     
-
-    def plot_matrix(self, contour=CONTOUR, scatter=SCATTER):
+    def separate_hands(self):
         Z = transform_matrix(self.Values)
+        kmeans, coords_only = run_kmeans(Z)
+        return Z, kmeans, coords_only
+
+    def plot_matrix(self, contour=CONTOUR, scatter=SCATTER, heat=HEAT):
+        Z, kmeans, coords_only = self.separate_hands()
+
+        # decide what visualizations to show
         if(contour):
             two_d_array = ndarray_to_2darray(Z)
             generate_contour_plot(two_d_array)
         if(scatter):
-            kmeans, coords_only = run_kmeans(Z)
             generate_scatter_plot(kmeans, coords_only)
+        if(heat):
+            generate_heatmap_plot(Z)
 
     def print_matrix(self):
         for i in range(COLS):
@@ -153,7 +161,7 @@ def generate_contour_plot(Z):
     # plt.clf()
 
 def generate_heatmap_plot(Z):
-    plt.imshow(Z, cmap='hot', interpolation='nearest')
+    plt.imshow(Z, cmap='inferno', interpolation='nearest')
     plt.show()
 
 #run k clustering on self.Values: https://realpython.com/k-means-clustering-python/#how-to-perform-k-means-clustering-in-python
@@ -210,7 +218,7 @@ def main():
         mat.get_matrix()
         if CONSOLE:
             mat.print_matrix()
-        mat.plot_matrix(contour=CONTOUR, scatter=SCATTER)
+        mat.plot_matrix(contour=CONTOUR, scatter=SCATTER, heat=HEAT)
         time.sleep(0.1)
 
 if __name__ == '__main__':
