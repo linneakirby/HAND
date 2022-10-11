@@ -18,7 +18,11 @@ ROWS = 48  # Rows of the sensor
 COLS = 48  # Columns of the sensor
 DEFAULT_PORT = '/dev/cu.usbmodem104742601'
 FIG_PATH = './Results/contour.png'
-CONTOUR = True
+
+CONSOLE = False
+CONTOUR = False
+SCATTER = True
+
 if CONTOUR:
     plt.style.use('_mpl-gallery-nogrid')
 
@@ -81,10 +85,14 @@ class Mat:
         self.active_points_get_map()
     
 
-    def plot_matrix(self):
-        two_d_array = ndarray_to_2darray(self.Values)
-        k_means(self.Values)
-        generate_plot(two_d_array)
+    def plot_matrix(self, contour=CONTOUR, scatter=SCATTER):
+        Z = transform_matrix(self.Values)
+        if(contour):
+            two_d_array = ndarray_to_2darray(Z)
+            generate_contour_plot(two_d_array)
+        if(scatter):
+            kmeans, coords_only = run_kmeans(Z)
+            generate_scatter_plot(kmeans, coords_only)
 
     def print_matrix(self):
         for i in range(COLS):
@@ -94,7 +102,24 @@ class Mat:
             print(tmp)
         print("\n")
 
+def transform_matrix(Z):
+    # copy and shift matrix
+    matrix_dict = dict()
+    for row in range(ROWS):
+        for col in range(COLS):
+            matrix_dict[(row-ROWS//2, col-COLS//2)] = Z[row][col]
+    # rotate matrix
+    rotated_dict = dict()
+    for point in matrix_dict:
+        x = -point[0]
+        y = -point[1]
+        rotated_dict[(x,y)] = matrix_dict[point]
 
+    # shift matrix back and reconstruct ndarray
+    ret_matrix = np.zeros((ROWS, COLS), dtype=int)
+    for point in rotated_dict:
+        ret_matrix[point[0]+ROWS//2-1][point[1]+COLS//2-1] = rotated_dict[point]
+    return ret_matrix
 
 def get_port():
     # This is how serial ports are organized on macOS.
@@ -116,44 +141,7 @@ def ndarray_to_2darray(nda, preserve_values=True):
                     two_d_array[i][j] = 1
     return two_d_array
 
-def remove_empty_points(nda):
-    tda = [[],[]]
-    for i in range(48):
-        for j in range(48):
-            if(int(nda[i][j]) != 0):
-                tda[0].append(i)
-                tda[1].append(j)
-    return tda
-
-#run k clustering on self.Values: https://realpython.com/k-means-clustering-python/#how-to-perform-k-means-clustering-in-python
-def k_means(karray, clusters=2):
-    kmeans = KMeans(init="k-means++", n_clusters=clusters, n_init=10, max_iter=300, random_state=42)
-    return kmeans.fit(karray)
-
-def generate_kmeans_plot(karray, clusters=2):
-    tda = remove_empty_points(karray)
-    km = k_means(tda)
-    y_km = km.fit_predict(tda)
-
-    plt.scatter(
-        tda[0], tda[1],
-        s=50, c='lightgreen',
-        marker='v', edgecolor='black',
-        label='cluster 1'
-    )
-
-    # plt.scatter(
-    #     tda[y_km == 1, 0], tda[y_km == 1, 1],
-    #     s=50, c='orange',
-    #     marker='o', edgecolor='black',
-    #     label='cluster 2'
-    # )
-
-    plt.legend(scatterpoints=1)
-    plt.grid()
-    plt.show()
-
-def generate_plot(Z):
+def generate_contour_plot(Z):
     plt.ion()
     fig, ax = plt.subplots(figsize=(5,5))
 
@@ -164,6 +152,53 @@ def generate_plot(Z):
     # plt.pause(0.0001)
     # plt.clf()
 
+def generate_heatmap_plot(Z):
+    plt.imshow(Z, cmap='hot', interpolation='nearest')
+    plt.show()
+
+#run k clustering on self.Values: https://realpython.com/k-means-clustering-python/#how-to-perform-k-means-clustering-in-python
+def run_kmeans(Z, clusters=2):
+    kmeans = KMeans(n_clusters=clusters)
+
+    # Creates a new array with the coordinates only of each point with a nonzero
+    # reading from the pressure mat
+    # 
+    # Basically, to force kmeans to only consider the coordinates
+    # of the points--not the sensor reading--when clustering.
+    coords_only = []
+    index = 0
+
+    for row in range(ROWS):
+        for col in range(COLS):
+            if Z[row][col]!=0:
+                coords_only.append([row, col])
+            index+=1
+
+    return kmeans.fit(coords_only), coords_only
+
+def generate_scatter_plot(kmeans, coords_only):
+    # # I was tired of graphing so here is the worst possible visualization for this data
+    index = 0
+    for row in range(ROWS):
+        for col in range(COLS):
+            if [row, col] in coords_only:
+                if kmeans.labels_[index] == 1:
+                    plt.scatter(
+                        row, col,
+                        s=50, c='orange',
+                        marker='o', edgecolor='black',
+                    )
+                if kmeans.labels_[index] == 0:
+                    plt.scatter(
+                        row, col,
+                        s=50, c='lightgreen',
+                        marker='v', edgecolor='black',
+                    )
+                index+=1
+
+    plt.legend(scatterpoints=1)
+    plt.grid()
+    plt.show()
 
 #visualize which points are in which cluster
 #then can do center of mass calculation: https://stackoverflow.com/questions/29356825/python-calculate-center-of-mass
@@ -173,10 +208,9 @@ def main():
     mat = Mat(get_port())
     while True:
         mat.get_matrix()
-        if not CONTOUR:
+        if CONSOLE:
             mat.print_matrix()
-        if CONTOUR:
-            mat.plot_matrix()
+        mat.plot_matrix(contour=CONTOUR, scatter=SCATTER)
         time.sleep(0.1)
 
 if __name__ == '__main__':
