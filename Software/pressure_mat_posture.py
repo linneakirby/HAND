@@ -86,12 +86,53 @@ class Mat:
         self.active_points_get_map()
     
     def separate_hands(self):
-        Z = transform_matrix(self.Values)
+        Z = transform_matrix_180(self.Values)
         kmeans, coords_only = run_kmeans(Z)
         return Z, kmeans, coords_only
 
+    def isolate_hands(self, Z, kmeans, coords_only):
+        right = dict()
+        left = dict()
+
+        index = 0
+        for row in range(ROWS):
+            for col in range(COLS):
+                if [row, col] in coords_only:
+                    if kmeans.labels_[index] == 1: #right
+                        right[(row, col)] = Z[row][col]
+                    if kmeans.labels_[index] == 0: #left
+                        left[(row, col)] = Z[row][col]
+                    index+=1
+
+        return right, left
+
+    def calculate_center_of_pressure(self, hand):
+        cop = [0,0,0]
+
+        for k in hand.keys():
+            cop[0] = cop[0] + k[0]
+            cop[1] = cop[1] + k[1]
+            cop[2] = cop[2] + hand.get(k)
+
+        for i in range(3):
+            cop[i] = cop[i]/len(hand)
+
+        return cop
+
+    def center_of_pressure(self, right, left):
+        rcop = self.calculate_center_of_pressure(right)
+        lcop = self.calculate_center_of_pressure(left)
+
+        cop = [0,0,0]
+        for i in range(3):
+            cop[i] = (rcop[i] + lcop[i]) / 2
+
+        return rcop, lcop, cop
+
     def plot_matrix(self, contour=CONTOUR, scatter=SCATTER, heat=HEAT):
         Z, kmeans, coords_only = self.separate_hands()
+        right, left = self.isolate_hands(Z, kmeans, coords_only)
+        rcop, lcop, cop = self.center_of_pressure(right, left)
 
         # decide what visualizations to show
         if(contour):
@@ -110,7 +151,8 @@ class Mat:
             print(tmp)
         print("\n")
 
-def transform_matrix(Z):
+# 180 degree transformation - may need to also have a function for -90 degree transformation
+def transform_matrix_180(Z):
     # copy and shift matrix
     matrix_dict = dict()
     for row in range(ROWS):
@@ -128,6 +170,7 @@ def transform_matrix(Z):
     for point in rotated_dict:
         ret_matrix[point[0]+ROWS//2-1][point[1]+COLS//2-1] = rotated_dict[point]
     return ret_matrix
+
 
 def get_port():
     # This is how serial ports are organized on macOS.
@@ -184,8 +227,47 @@ def run_kmeans(Z, clusters=2):
 
     return kmeans.fit(coords_only), coords_only
 
-def generate_scatter_plot(kmeans, coords_only):
-    # # I was tired of graphing so here is the worst possible visualization for this data
+def isolate_hands(Z, kmeans, coords_only):
+    right = dict()
+    left = dict()
+
+    index = 0
+    for row in range(ROWS):
+        for col in range(COLS):
+            if [row, col] in coords_only:
+                if kmeans.labels_[index] == 1: #right
+                    right[(row, col)] = Z[row][col]
+                if kmeans.labels_[index] == 0: #left
+                    left[(row, col)] = Z[row][col]
+                index+=1
+
+    return right, left
+
+def calculate_center_of_pressure(hand):
+    cop = [0,0,0]
+
+    for k in hand.keys():
+        cop[0] = cop[0] + k[0]
+        cop[1] = cop[1] + k[1]
+        cop[2] = cop[2] + hand.get(k)
+
+    for i in range(3):
+        cop[i] = cop[i]/len(hand)
+
+    return cop
+
+def center_of_pressure(right, left):
+    rcop = calculate_center_of_pressure(right)
+    lcop = calculate_center_of_pressure(left)
+
+    cop = [0,0,0]
+    for i in range(3):
+        cop[i] = (rcop[i] + lcop[i]) / 2
+
+    return rcop, lcop, cop
+
+def generate_scatter_plot(kmeans, coords_only, rcop, lcop, cop):
+    # TODO: refactor this so it uses the left and right dicts
     index = 0
     for row in range(ROWS):
         for col in range(COLS):
@@ -199,12 +281,31 @@ def generate_scatter_plot(kmeans, coords_only):
                 if kmeans.labels_[index] == 0:
                     plt.scatter(
                         row, col,
-                        s=50, c='lightgreen',
+                        s=50, c='violet',
                         marker='v', edgecolor='black',
                     )
                 index+=1
 
-    plt.legend(scatterpoints=1)
+    plt.scatter(
+        rcop[0], rcop[1],
+        s=50, c='orangered',
+        marker='s', edgecolor='lime', label='right CoP'
+        )
+    plt.scatter(
+        lcop[0], lcop[1],
+        s=50, c='indigo',
+        marker='s', edgecolor='lime', label='left CoP'
+        )
+    plt.scatter(
+        cop[0], cop[1],
+        s=50, c='teal',
+        marker='s', edgecolor='lime', label='CoP'
+        )
+
+    plt.legend(loc='upper center', bbox_to_anchor=(0.5, -0.05), 
+           ncol=5)
+
+    #plt.legend(scatterpoints=1)
     plt.grid()
     plt.show()
 
