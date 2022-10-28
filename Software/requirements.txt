@@ -1,5 +1,6 @@
 numpy
 pyserial
+ipython
 matplotlib
 opencv-python
 scikit-image
