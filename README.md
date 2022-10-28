@@ -6,6 +6,7 @@ Schematics and firmware for haptics-embedded palmless, fingerless gloves and sof
 Schematics for the gloves can be found in the "Technical Docs" folder under "Gloves_battery_schem.png" and "Gloves_battery_bb.png".
 
 <img alt="glove schematics" src="Technical Docs/Gloves_battery_schem.png" width="auto" height="auto"/>
+<img alt="glove breadboard setup" src="Technical Docs/Gloves_battery_bb.png" width="auto" height="auto"/>
 
 ### Firmware
 Firmware for the gloves can be found in the "Software/Arduino" folder.
