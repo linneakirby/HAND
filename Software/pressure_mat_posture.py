@@ -118,7 +118,7 @@ class Mat:
                 cop[0] = cop[0] + k[0]
                 cop[1] = cop[1] + k[1]
 
-            for i in range(3):
+            for i in range(2):
                 cop[i] = cop[i]/len(hand)
 
         else: #actual values
@@ -127,7 +127,7 @@ class Mat:
                 cop[0] = cop[0] + k[0]*hand.get(k)[1] #multiply by normalized pressure value
                 cop[1] = cop[1] + k[1]*hand.get(k)[1]
 
-            for i in range(3):
+            for i in range(2):
                 cop[i] = cop[i]/len(hand)
 
         return cop
@@ -139,14 +139,14 @@ class Mat:
         ideal_cop = [0,0,0]
         ideal_rcop = self.calculate_center_of_pressure(right, False)
         ideal_lcop = self.calculate_center_of_pressure(left, False)
-        for i in range(3):
+        for i in range(2):
             ideal_cop[i] = (ideal_rcop[i] + ideal_lcop[i]) / 2
 
         # calculate the actual centers of pressure
         actual_cop = [0,0,0]
         actual_rcop = self.calculate_center_of_pressure(right)
         actual_lcop = self.calculate_center_of_pressure(left)
-        for i in range(3):
+        for i in range(2):
             actual_cop[i] = (actual_rcop[i] + actual_lcop[i]) / 2
 
         return actual_rcop, actual_lcop, ideal_cop, actual_cop
@@ -249,7 +249,7 @@ def run_kmeans(Z, clusters=2):
 
     return kmeans.fit(coords_only), coords_only
 
-def isolate_hands(self, Z, kmeans, coords_only):
+def isolate_hands(Z, kmeans, coords_only):
     right = dict()
     left = dict()
 
@@ -267,7 +267,7 @@ def isolate_hands(self, Z, kmeans, coords_only):
 
     return right, left
 
-def calculate_center_of_pressure(self, hand, actual=True):
+def calculate_center_of_pressure(hand, actual=True):
     cop = [0,0]
 
     if not actual:
@@ -275,7 +275,7 @@ def calculate_center_of_pressure(self, hand, actual=True):
             cop[0] = cop[0] + k[0]
             cop[1] = cop[1] + k[1]
 
-        for i in range(3):
+        for i in range(2):
             cop[i] = cop[i]/len(hand)
 
     else: #actual values
@@ -283,31 +283,31 @@ def calculate_center_of_pressure(self, hand, actual=True):
             cop[0] = cop[0] + k[0]*hand.get(k)[1] #multiply by normalized pressure value
             cop[1] = cop[1] + k[1]*hand.get(k)[1]
 
-        for i in range(3):
+        for i in range(2):
             cop[i] = cop[i]/len(hand)
 
     return cop
 
 
-def center_of_pressure(self, right, left):
+def center_of_pressure(right, left):
 
     # calculate the ideal centers of pressure
     ideal_cop = [0,0,0]
-    ideal_rcop = self.calculate_center_of_pressure(right, False)
-    ideal_lcop = self.calculate_center_of_pressure(left, False)
-    for i in range(3):
+    ideal_rcop = calculate_center_of_pressure(right, False)
+    ideal_lcop = calculate_center_of_pressure(left, False)
+    for i in range(2):
         ideal_cop[i] = (ideal_rcop[i] + ideal_lcop[i]) / 2
 
      # calculate the actual centers of pressure        
     actual_cop = [0,0,0]
-    actual_rcop = self.calculate_center_of_pressure(right)
-    actual_lcop = self.calculate_center_of_pressure(left)
-    for i in range(3):
+    actual_rcop = calculate_center_of_pressure(right)
+    actual_lcop = calculate_center_of_pressure(left)
+    for i in range(2):
         actual_cop[i] = (actual_rcop[i] + actual_lcop[i]) / 2
 
     return actual_rcop, actual_lcop, ideal_cop, actual_cop
 
-def generate_scatter_plot(kmeans, coords_only, rcop, lcop, desired_cop, actual_cop):
+def generate_scatter_plot(kmeans, coords_only, rcop, lcop, ideal_cop, actual_cop):
     # TODO: refactor this so it uses the left and right dicts
     index = 0
     for row in range(ROWS):
@@ -338,14 +338,14 @@ def generate_scatter_plot(kmeans, coords_only, rcop, lcop, desired_cop, actual_c
         marker='s', edgecolor='lime', label='left CoP'
         )
     plt.scatter(
-        desired_cop[0], desired_cop[1],
-        s=50, c='teal',
-        marker='s', edgecolor='lime', label='CoP'
+        ideal_cop[0], ideal_cop[1],
+        s=50, c='dodgerblue',
+        marker='s', edgecolor='lime', label='ideal CoP'
         )
     plt.scatter(
         actual_cop[0], actual_cop[1],
-        s=50, c='teal',
-        marker='s', edgecolor='lime', label='CoP'
+        s=50, c='aquamarine',
+        marker='s', edgecolor='lime', label='current CoP'
         )
 
     plt.legend(loc='upper center', bbox_to_anchor=(0.5, -0.05), 
