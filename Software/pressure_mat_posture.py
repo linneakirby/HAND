@@ -249,23 +249,51 @@ def run_kmeans(Z, clusters=2):
 
     return kmeans.fit(coords_only), coords_only
 
+"Convert a list of values to be between 0 and 1 (inclusive)"
+def normalize(l):
+    small, big = min(l), max(l)
+    span = big - small
+    return [x/span + (abs(small)/span) for x in l]
+
+def find_normalized_values(Z, kmeans, coords_only):
+    right_array = []
+    left_array = []
+
+    index = 0
+    for row in range(ROWS):
+         for col in range(COLS):
+            if [row, col] in coords_only:
+                if kmeans.labels_[index] == 1: #right
+                    right_array.append(Z[row, col])
+                if kmeans.labels_[index] == 0: #left
+                    left_array.append(Z[row, col])
+                index+=1
+
+    normalized_right_array = normalize(right_array)
+    normalized_left_array = normalize(left_array)
+
+    return normalized_right_array, normalized_left_array
+
 def isolate_hands(Z, kmeans, coords_only):
     right = dict()
     left = dict()
-
-    normalized_Z = preprocessing.normalize(Z)
+    normalized_right_array, normalized_left_array = find_normalized_values(Z, kmeans, coords_only)
 
     index = 0
+    right_index = 0
+    left_index = 0
     for row in range(ROWS):
         for col in range(COLS):
             if [row, col] in coords_only:
                 if kmeans.labels_[index] == 1: #right
-                    right[(row, col)] = (Z[row][col], normalized_Z[row][col])
+                    right[(row, col)] = (Z[row][col], normalized_right_array[right_index])
+                    right_index+=1
                 if kmeans.labels_[index] == 0: #left
-                    left[(row, col)] = (Z[row][col], normalized_Z[row][col])
+                    left[(row, col)] = (Z[row][col], normalized_left_array[left_index])
+                    left_index+=1
                 index+=1
 
-    return right, left
+    return right, left, normalized_right_array, normalized_left_array
 
 def calculate_center_of_pressure(hand, actual=True):
     cop = [0,0]
