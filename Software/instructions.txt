@@ -1,0 +1,9 @@
+tm = transform_matrix_180(hands_array)
+
+kmeans, coords_only = run_kmeans(tm)
+
+r, l, normalized_right_array, normalized_left_array = isolate_hands(hands_array, kmeans, coords_only)
+
+actual_rcop, actual_lcop, ideal_cop, actual_cop = center_of_pressure(r, l)
+
+generate_scatter_plot(kmeans, coords_only, actual_rcop, actual_lcop, ideal_cop, actual_cop)

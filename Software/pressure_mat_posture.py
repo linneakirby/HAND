@@ -251,9 +251,14 @@ def run_kmeans(Z, clusters=2):
 
 "Convert a list of values to be between 0 and 1 (inclusive)"
 def normalize(l):
-    small, big = min(l), max(l)
+    if not l:
+        small, big = 0, 0
+    else:
+        small, big = min(l), max(l)
     span = big - small
-    return [x/span + (abs(small)/span) for x in l]
+    if span == 0:
+        return [0]
+    return [(x-small)/span for x in l]
 
 def find_normalized_values(Z, kmeans, coords_only):
     right_array = []
@@ -261,7 +266,7 @@ def find_normalized_values(Z, kmeans, coords_only):
 
     index = 0
     for row in range(ROWS):
-         for col in range(COLS):
+        for col in range(COLS):
             if [row, col] in coords_only:
                 if kmeans.labels_[index] == 1: #right
                     right_array.append(Z[row, col])
@@ -275,6 +280,7 @@ def find_normalized_values(Z, kmeans, coords_only):
     return normalized_right_array, normalized_left_array
 
 def isolate_hands(Z, kmeans, coords_only):
+
     right = dict()
     left = dict()
     normalized_right_array, normalized_left_array = find_normalized_values(Z, kmeans, coords_only)
@@ -286,28 +292,38 @@ def isolate_hands(Z, kmeans, coords_only):
         for col in range(COLS):
             if [row, col] in coords_only:
                 if kmeans.labels_[index] == 1: #right
+                    print("Adding to RIGHT\nkey: ", row, ",", col, "\nvalue: ", Z[row][col], ",", normalized_right_array[right_index])
                     right[(row, col)] = (Z[row][col], normalized_right_array[right_index])
                     right_index+=1
                 if kmeans.labels_[index] == 0: #left
+                    print("Adding to LEFT\nkey: ", row, ",", col, "\nvalue: ", Z[row][col], ",", normalized_left_array[left_index])
                     left[(row, col)] = (Z[row][col], normalized_left_array[left_index])
                     left_index+=1
                 index+=1
 
     return right, left, normalized_right_array, normalized_left_array
 
+
+
 def calculate_center_of_pressure(hand, actual=True):
+    TEST_END = 1 #len(hand.keys())
     cop = [0,0]
+    keys = list()
+    for k in hand.keys():
+        keys.append(k)
 
     if not actual:
-        for k in hand.keys():
+        for k in keys[:TEST_END]:
+            print("point: ", k)
             cop[0] = cop[0] + k[0]
             cop[1] = cop[1] + k[1]
 
         for i in range(2):
-            cop[i] = cop[i]/len(hand)
+            #cop[i] = cop[i]/len(hand)
+            cop[i] = cop[i]/TEST_END
 
     else: #actual values
-        for k in hand.keys():
+        for k in keys[:TEST_END]:
             cop[0] = cop[0] + k[0]*hand.get(k)[1] #multiply by normalized pressure value
             cop[1] = cop[1] + k[1]*hand.get(k)[1]
 
@@ -328,8 +344,8 @@ def center_of_pressure(right, left):
 
      # calculate the actual centers of pressure        
     actual_cop = [0,0,0]
-    actual_rcop = calculate_center_of_pressure(right)
-    actual_lcop = calculate_center_of_pressure(left)
+    actual_rcop = calculate_center_of_pressure(right, True)
+    actual_lcop = calculate_center_of_pressure(left, True)
     for i in range(2):
         actual_cop[i] = (actual_rcop[i] + actual_lcop[i]) / 2
 
