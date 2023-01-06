@@ -91,66 +91,6 @@ class Mat:
         kmeans, coords_only = run_kmeans(Z)
         return Z, kmeans, coords_only
 
-    def isolate_hands(self, Z, kmeans, coords_only):
-        right = dict()
-        left = dict()
-
-        normalized_Z = preprocessing.normalize(Z)
-
-        index = 0
-        for row in range(ROWS):
-            for col in range(COLS):
-                if [row, col] in coords_only:
-                    if kmeans.labels_[index] == 1: #right
-                        right[(row, col)] = (Z[row][col], normalized_Z[row][col])
-                    if kmeans.labels_[index] == 0: #left
-                        left[(row, col)] = (Z[row][col], normalized_Z[row][col])
-                    index+=1
-
-        return right, left
-
-    def calculate_center_of_pressure(self, hand, actual=True):
-        cop = [0,0]
-
-        if not actual:
-            for k in hand.keys():
-
-                cop[0] = cop[0] + k[0]
-                cop[1] = cop[1] + k[1]
-
-            for i in range(2):
-                cop[i] = cop[i]/len(hand)
-
-        else: #actual values
-            for k in hand.keys():
-
-                cop[0] = cop[0] + k[0]*hand.get(k)[1] #multiply by normalized pressure value
-                cop[1] = cop[1] + k[1]*hand.get(k)[1]
-
-            for i in range(2):
-                cop[i] = cop[i]/len(hand)
-
-        return cop
-
-
-    def center_of_pressure(self, right, left):
-        
-        # calculate the ideal centers of pressure
-        ideal_cop = [0,0,0]
-        ideal_rcop = self.calculate_center_of_pressure(right, False)
-        ideal_lcop = self.calculate_center_of_pressure(left, False)
-        for i in range(2):
-            ideal_cop[i] = (ideal_rcop[i] + ideal_lcop[i]) / 2
-
-        # calculate the actual centers of pressure
-        actual_cop = [0,0,0]
-        actual_rcop = self.calculate_center_of_pressure(right)
-        actual_lcop = self.calculate_center_of_pressure(left)
-        for i in range(2):
-            actual_cop[i] = (actual_rcop[i] + actual_lcop[i]) / 2
-
-        return actual_rcop, actual_lcop, ideal_cop, actual_cop
-
     def plot_matrix(self, contour=CONTOUR, scatter=SCATTER, heat=HEAT):
         Z, kmeans, coords_only = self.separate_hands()
         right, left = self.isolate_hands(Z, kmeans, coords_only)
@@ -245,111 +185,67 @@ def run_kmeans(Z, clusters=2):
         for col in range(COLS):
             if Z[row][col]!=0:
                 coords_only.append([row, col])
+                #print("Appending: ", row, ",", col)
+                #print(Z[row][col])
             index+=1
 
     return kmeans.fit(coords_only), coords_only
-
-"Convert a list of values to be between 0 and 1 (inclusive)"
-def normalize(l):
-    if not l:
-        small, big = 0, 0
-    else:
-        small, big = min(l), max(l)
-    span = big - small
-    if span == 0:
-        return [0]
-    return [(x-small)/span for x in l]
-
-def find_normalized_values(Z, kmeans, coords_only):
-    right_array = []
-    left_array = []
-
-    index = 0
-    for row in range(ROWS):
-        for col in range(COLS):
-            if [row, col] in coords_only:
-                if kmeans.labels_[index] == 1: #right
-                    right_array.append(Z[row, col])
-                if kmeans.labels_[index] == 0: #left
-                    left_array.append(Z[row, col])
-                index+=1
-
-    normalized_right_array = normalize(right_array)
-    normalized_left_array = normalize(left_array)
-
-    return normalized_right_array, normalized_left_array
 
 def isolate_hands(Z, kmeans, coords_only):
 
     right = dict()
     left = dict()
-    normalized_right_array, normalized_left_array = find_normalized_values(Z, kmeans, coords_only)
 
     index = 0
     right_index = 0
     left_index = 0
     for row in range(ROWS):
         for col in range(COLS):
-            if [row, col] in coords_only:
-                if kmeans.labels_[index] == 1: #right
-                    print("Adding to RIGHT\nkey: ", row, ",", col, "\nvalue: ", Z[row][col], ",", normalized_right_array[right_index])
-                    right[(row, col)] = (Z[row][col], normalized_right_array[right_index])
+            #print("Looking at: ", row, ",",col)
+            if ([row, col] in coords_only):
+                if (kmeans.labels_[index] == 1): #right
+                    #print("Adding to RIGHT\nkey: ", row, ",", col, "\nvalue: ", Z[row][col])
+                    right[(row, col)] = (Z[row][col])
                     right_index+=1
-                if kmeans.labels_[index] == 0: #left
-                    print("Adding to LEFT\nkey: ", row, ",", col, "\nvalue: ", Z[row][col], ",", normalized_left_array[left_index])
-                    left[(row, col)] = (Z[row][col], normalized_left_array[left_index])
+                if (kmeans.labels_[index] == 0): #left
+                    #print("Adding to LEFT\nkey: ", row, ",", col, "\nvalue: ", Z[row][col])
+                    left[(row, col)] = (Z[row][col])
                     left_index+=1
                 index+=1
 
-    return right, left, normalized_right_array, normalized_left_array
+    return right, left
 
-
-
-def calculate_center_of_pressure(hand, actual=True):
-    TEST_END = 1 #len(hand.keys())
+# based off of http://hyperphysics.phy-astr.gsu.edu/hbase/cm.html
+def calculate_cop(pv_dict):
     cop = [0,0]
-    keys = list()
-    for k in hand.keys():
-        keys.append(k)
 
-    if not actual:
-        for k in keys[:TEST_END]:
-            print("point: ", k)
-            cop[0] = cop[0] + k[0]
-            cop[1] = cop[1] + k[1]
+    for k in pv_dict.keys():
+        cop[0] = cop[0] + k[0]*pv_dict.get(k)
+        cop[1] = cop[1] + k[1]*pv_dict.get(k)
+        #print("MULTIPLIED BY: ", pv_dict.get(k))
+        #print("COP IS NOW: ", cop[0], ",", cop[1])
 
-        for i in range(2):
-            #cop[i] = cop[i]/len(hand)
-            cop[i] = cop[i]/TEST_END
+    for i in range(2):
+        cop[i] = cop[i]/sum(pv_dict.values())
 
-    else: #actual values
-        for k in keys[:TEST_END]:
-            cop[0] = cop[0] + k[0]*hand.get(k)[1] #multiply by normalized pressure value
-            cop[1] = cop[1] + k[1]*hand.get(k)[1]
-
-        for i in range(2):
-            cop[i] = cop[i]/len(hand)
-
+    #print("COP IS RETURNING AS: ", cop[0], ",", cop[1])
     return cop
 
+def generate_cops(right, left):
+    rcop = calculate_cop(right)
+    lcop = calculate_cop(left)
 
-def center_of_pressure(right, left):
+    both_hands = dict()
+    both_hands.update(right)
+    both_hands.update(left)
+    actual_cop = calculate_cop(both_hands)
 
-    # calculate the ideal centers of pressure
-    ideal_cop = [0,0,0]
-    ideal_rcop = calculate_center_of_pressure(right, False)
-    ideal_lcop = calculate_center_of_pressure(left, False)
-    for i in range(2):
-        ideal_cop[i] = (ideal_rcop[i] + ideal_lcop[i]) / 2
+    ideal_hands = dict()
+    for k in both_hands.keys():
+        ideal_hands[k] = 1
+    ideal_cop = calculate_cop(ideal_hands)
 
-     # calculate the actual centers of pressure        
-    actual_cop = [0,0,0]
-    actual_rcop = calculate_center_of_pressure(right, True)
-    actual_lcop = calculate_center_of_pressure(left, True)
-    for i in range(2):
-        actual_cop[i] = (actual_rcop[i] + actual_lcop[i]) / 2
-
-    return actual_rcop, actual_lcop, ideal_cop, actual_cop
+    return rcop, lcop, ideal_cop, actual_cop
 
 def generate_scatter_plot(kmeans, coords_only, rcop, lcop, ideal_cop, actual_cop):
     # TODO: refactor this so it uses the left and right dicts
