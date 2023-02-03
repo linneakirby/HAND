@@ -247,6 +247,50 @@ def generate_cops(right, left):
 
     return rcop, lcop, ideal_cop, actual_cop
 
+def create_actuator_dict():
+    actuators = dict()
+    actuators['i'] = False #index
+    actuators['p'] = False #pinky
+    actuators['w'] = False #wrist
+    actuators['t'] = False #thumb
+
+    return actuators
+
+def create_vector(start, end):
+    return list(end[0]-start[0], end[1]-start[1])
+
+# actual_cop is origin
+# subtract actual_cop from ideal_cop
+# quadrant determines which actuators to activate
+#                 I
+#     acx > icx   |  acx < icx
+#     acy < icy   |  acy < icy
+# P --------------•--------------- T
+#     acx > icx   |  acx < icx
+#     acy > icy   |  acy > icy
+#                 W
+def select_actuators(vector, actuators):
+    if(vector[0] > 0 and vector[1] > 0): #top right (IT)
+        actuators['i'] = True
+        actuators['t'] = True
+        actuators['w'] = False
+        actuators['p'] = False
+    elif(vector[0] > 0 and vector[1] < 0): #bottom right (TW)
+        actuators['i'] = False
+        actuators['t'] = True
+        actuators['w'] = True
+        actuators['p'] = False
+    elif(vector[0] < 0 and vector[1] < 0): #bottom left (WP)
+        actuators['i'] = False
+        actuators['t'] = False
+        actuators['w'] = True
+        actuators['p'] = True
+    elif(vector[0] < 0 and vector[1] > 0): #top left (PI)
+        actuators['i'] = True
+        actuators['t'] = False
+        actuators['w'] = False
+        actuators['p'] = True
+
 def generate_scatter_plot(kmeans, coords_only, rcop, lcop, ideal_cop, actual_cop):
     # TODO: refactor this so it uses the left and right dicts
     index = 0
