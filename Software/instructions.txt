@@ -6,6 +6,12 @@ r, l = isolate_hands(tm, kmeans, coords_only)
 
 actual_rcop, actual_lcop, ideal_cop, actual_cop = generate_cops(r, l)
 
+actuators = create_actuator_dict()
+
+vector = create_vector(actual_cop, ideal_cop)
+
+actuators = select_actuators(vector, actuators)
+
 generate_scatter_plot(kmeans, coords_only, actual_rcop, actual_lcop, ideal_cop, actual_cop)
 
 _____________________________________________________

@@ -1,5 +1,4 @@
 # Standard libraries
-import subprocess
 import sys
 import time
 
@@ -7,11 +6,7 @@ import time
 import matplotlib.pyplot as plt
 import numpy as np
 import serial.tools.list_ports
-import skimage
 from sklearn.cluster import KMeans
-from sklearn.decomposition import PCA
-from sklearn import preprocessing
-
 np.set_printoptions(threshold=sys.maxsize)
 
 # Default parameters
@@ -257,7 +252,7 @@ def create_actuator_dict():
     return actuators
 
 def create_vector(start, end):
-    return list(end[0]-start[0], end[1]-start[1])
+    return (end[0]-start[0], end[1]-start[1])
 
 # actual_cop is origin
 # subtract actual_cop from ideal_cop
@@ -291,6 +286,8 @@ def select_actuators(vector, actuators):
         actuators['w'] = False
         actuators['p'] = True
 
+    return actuators
+
 def generate_scatter_plot(kmeans, coords_only, rcop, lcop, ideal_cop, actual_cop):
     # TODO: refactor this so it uses the left and right dicts
     index = 0
@@ -311,6 +308,7 @@ def generate_scatter_plot(kmeans, coords_only, rcop, lcop, ideal_cop, actual_cop
                     )
                 index+=1
 
+    # add center of pressure markers
     plt.scatter(
         rcop[0], rcop[1],
         s=50, c='orangered',
@@ -332,6 +330,12 @@ def generate_scatter_plot(kmeans, coords_only, rcop, lcop, ideal_cop, actual_cop
         marker='s', edgecolor='lime', label='current CoP'
         )
 
+    # add vector
+    dx = ideal_cop[0] - actual_cop[0]
+    dy = ideal_cop[1] - actual_cop[1]
+    plt.arrow(actual_cop[0], actual_cop[1], dx, dy, facecolor = "red", edgecolor = "none")
+
+    # add legend
     plt.legend(loc='upper center', bbox_to_anchor=(0.5, -0.05), 
            ncol=5)
 
@@ -342,6 +346,36 @@ def generate_scatter_plot(kmeans, coords_only, rcop, lcop, ideal_cop, actual_cop
 #visualize which points are in which cluster
 #then can do center of mass calculation: https://stackoverflow.com/questions/29356825/python-calculate-center-of-mass
 
+def execute_instructions(hands_array):
+    tm = transform_matrix_180(hands_array)
+
+    kmeans, coords_only = run_kmeans(tm)
+
+    r, l = isolate_hands(tm, kmeans, coords_only)
+
+    actual_rcop, actual_lcop, ideal_cop, actual_cop = generate_cops(r, l)
+
+    actuators = create_actuator_dict()
+
+    vector = create_vector(actual_cop, ideal_cop)
+
+    actuators = select_actuators(vector, actuators)
+
+    generate_scatter_plot(kmeans, coords_only, actual_rcop, actual_lcop, ideal_cop, actual_cop)
+
+    parameters_dict = dict()
+    parameters_dict["kmeans"] = kmeans
+    parameters_dict["coords"] = coords_only
+    parameters_dict["r"] = r
+    parameters_dict["l"] = l
+    parameters_dict["rcop"] = actual_rcop
+    parameters_dict["lcop"] = actual_lcop
+    parameters_dict["icop"] = ideal_cop
+    parameters_dict["cop"] = actual_cop
+    parameters_dict["a"] = actuators
+    parameters_dict["v"] = vector
+
+    return parameters_dict
 
 def main():
     mat = Mat(get_port())
