@@ -1,3 +1,6 @@
+parameters_dict = execute_instructions(hands_array)
+_____________________________________________________
+
 tm = transform_matrix_180(hands_array)
 
 kmeans, coords_only = run_kmeans(tm)
