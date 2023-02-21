@@ -8,6 +8,7 @@ import numpy as np
 import serial.tools.list_ports
 from sklearn.cluster import KMeans
 np.set_printoptions(threshold=sys.maxsize)
+from flask import Flask
 
 # Default parameters
 ROWS = 48  # Rows of the sensor
@@ -343,8 +344,6 @@ def generate_scatter_plot(kmeans, coords_only, rcop, lcop, ideal_cop, actual_cop
     plt.grid()
     plt.show()
 
-#visualize which points are in which cluster
-#then can do center of mass calculation: https://stackoverflow.com/questions/29356825/python-calculate-center-of-mass
 
 def execute_instructions(hands_array):
     tm = transform_matrix_180(hands_array)
@@ -377,14 +376,14 @@ def execute_instructions(hands_array):
 
     return parameters_dict
 
-def main():
-    mat = Mat(get_port())
-    while True:
-        mat.get_matrix()
-        if CONSOLE:
-            mat.print_matrix()
-        mat.plot_matrix(contour=CONTOUR, scatter=SCATTER, heat=HEAT)
-        time.sleep(0.1)
+# def main():
+#     mat = Mat(get_port())
+#     while True:
+#         mat.get_matrix()
+#         if CONSOLE:
+#             mat.print_matrix()
+#         mat.plot_matrix(contour=CONTOUR, scatter=SCATTER, heat=HEAT)
+#         time.sleep(0.1)
 
-if __name__ == '__main__':
-    main()
+# if __name__ == '__main__':
+#     main()
