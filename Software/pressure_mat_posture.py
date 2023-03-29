@@ -1,6 +1,7 @@
 # Standard libraries
 import sys
 import time
+from pynput import keyboard
 
 # Third-party libraries
 import matplotlib.pyplot as plt
@@ -17,8 +18,8 @@ DEFAULT_PORT = '/dev/cu.usbmodem104742601'
 FIG_PATH = './Results/contour.png'
 
 CONSOLE = False
-CONTOUR = False
-SCATTER = True
+CONTOUR = True
+SCATTER = False
 HEAT = False
 
 if CONTOUR:
@@ -185,6 +186,9 @@ def run_kmeans(Z, clusters=2):
                 #print(Z[row][col])
             index+=1
 
+    if not coords_only:
+        return kmeans, []
+
     return kmeans.fit(coords_only), coords_only
 
 def isolate_hands(Z, kmeans, coords_only):
@@ -199,11 +203,11 @@ def isolate_hands(Z, kmeans, coords_only):
         for col in range(COLS):
             #print("Looking at: ", row, ",",col)
             if ([row, col] in coords_only):
-                if (kmeans.labels_[index] == 1): #right
+                if (kmeans.labels_[index] == 0): #right
                     #print("Adding to RIGHT\nkey: ", row, ",", col, "\nvalue: ", Z[row][col])
                     right[(row, col)] = (Z[row][col])
                     right_index+=1
-                if (kmeans.labels_[index] == 0): #left
+                if (kmeans.labels_[index] == 1): #left
                     #print("Adding to LEFT\nkey: ", row, ",", col, "\nvalue: ", Z[row][col])
                     left[(row, col)] = (Z[row][col])
                     left_index+=1
@@ -289,7 +293,7 @@ def select_actuators(vector, actuators):
 
     return actuators
 
-def generate_scatter_plot(kmeans, coords_only, rcop, lcop, ideal_cop, actual_cop):
+def generate_scatter_plot(kmeans, coords_only, rcop, lcop, ideal_cop, actual_cop, figure):
     # TODO: refactor this so it uses the left and right dicts
     index = 0
     for row in range(ROWS):
@@ -341,49 +345,78 @@ def generate_scatter_plot(kmeans, coords_only, rcop, lcop, ideal_cop, actual_cop
            ncol=5)
 
     #plt.legend(scatterpoints=1)
-    plt.grid()
-    plt.show()
+    # plt.grid()
+    # plt.draw()
+    #plt.show()
+    figure.canvas.draw()
+    figure.canvas.flush_events()
 
 
-def execute_instructions(hands_array):
-    tm = transform_matrix_180(hands_array)
+def execute_instructions(hands_array, figure):
+    parameters_dict = dict()
+    tm = hands_array
+    # tm = transform_matrix_180(hands_array)
 
     kmeans, coords_only = run_kmeans(tm)
 
-    r, l = isolate_hands(tm, kmeans, coords_only)
+    if(coords_only):
 
-    actual_rcop, actual_lcop, ideal_cop, actual_cop = generate_cops(r, l)
+        r, l = isolate_hands(tm, kmeans, coords_only)
 
-    actuators = create_actuator_dict()
+        actual_rcop, actual_lcop, ideal_cop, actual_cop = generate_cops(r, l)
 
-    vector = create_vector(actual_cop, ideal_cop)
+        actuators = create_actuator_dict()
 
-    actuators = select_actuators(vector, actuators)
+        vector = create_vector(actual_cop, ideal_cop)
 
-    generate_scatter_plot(kmeans, coords_only, actual_rcop, actual_lcop, ideal_cop, actual_cop)
+        actuators = select_actuators(vector, actuators)
 
-    parameters_dict = dict()
-    parameters_dict["kmeans"] = kmeans
-    parameters_dict["coords"] = coords_only
-    parameters_dict["r"] = r
-    parameters_dict["l"] = l
-    parameters_dict["rcop"] = actual_rcop
-    parameters_dict["lcop"] = actual_lcop
-    parameters_dict["icop"] = ideal_cop
-    parameters_dict["cop"] = actual_cop
-    parameters_dict["a"] = actuators
-    parameters_dict["v"] = vector
+        generate_scatter_plot(kmeans, coords_only, actual_rcop, actual_lcop, ideal_cop, actual_cop, figure)
+
+        parameters_dict["kmeans"] = kmeans
+        parameters_dict["coords"] = coords_only
+        parameters_dict["r"] = r
+        parameters_dict["l"] = l
+        parameters_dict["rcop"] = actual_rcop
+        parameters_dict["lcop"] = actual_lcop
+        parameters_dict["icop"] = ideal_cop
+        parameters_dict["cop"] = actual_cop
+        parameters_dict["a"] = actuators
+        parameters_dict["v"] = vector
 
     return parameters_dict
 
-# def main():
-#     mat = Mat(get_port())
-#     while True:
-#         mat.get_matrix()
-#         if CONSOLE:
-#             mat.print_matrix()
-#         mat.plot_matrix(contour=CONTOUR, scatter=SCATTER, heat=HEAT)
-#         time.sleep(0.1)
+def on_press(key):
+    try:
+        print('alphanumeric key {0} pressed'.format(
+            key.char))
+    except AttributeError:
+        print('special key {0} pressed'.format(
+            key))
 
-# if __name__ == '__main__':
-#     main()
+def on_release(key):
+    print('{0} released'.format(
+        key))
+    if key == keyboard.Key.esc:
+        # Stop listener
+        return False
+
+def main():
+    mat = Mat(get_port())
+    # with keyboard.Listener(
+    #     on_press=on_press,
+    #     on_release=on_release) as listener:
+    #     listener.join
+    while True:
+        mat.get_matrix()
+        if CONSOLE:
+            mat.print_matrix()
+        
+        fig, ax = plt.subplots(figsize=(5,5))
+        plt.ion()
+        execute_instructions(mat.Values, fig)
+        plt.show()
+        time.sleep(0.1)
+
+if __name__ == '__main__':
+    main()
