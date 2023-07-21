@@ -8,7 +8,7 @@ Schematics for the gloves can be found in the "Technical Docs" folder under "Glo
 <img alt="glove schematics" src="Technical Docs/Gloves_battery_schem.png" width="auto" height="300px"/> <img alt="glove breadboard setup" src="Technical Docs/Gloves_battery_bb.png" width="auto" height="300px"/>
 
 ### Firmware
-Firmware for the gloves can be found in the "Software/Arduino" folder.
+Firmware for the gloves can be found in the "Software/Arduino" folder. In Arduino, the board is considered a "Generic ESP8266 Module" and is part of the "ESP8266 Boards" library.
 
 ## Mat Software
 The mat software is written in Python3 and can be found in the "Software" folder as "pressure_mat_posture.py". A list of dependencies can be found in the "requirements.txt" file in the same folder.
