@@ -61,6 +61,7 @@ void loop() {
         if (httpCode == HTTP_CODE_OK || httpCode == HTTP_CODE_MOVED_PERMANENTLY) {
           String payload = http.getString();
           Serial.println("Payload: "+ payload);
+          // ACTIVATE ACTUATORS HERE
         }
       } else {
         Serial.printf("[HTTP] GET... failed, error: %s\n", http.errorToString(httpCode).c_str());
@@ -74,3 +75,7 @@ void loop() {
 
   delay(10000);
 }
+
+// process payload
+
+// trigger actuators
