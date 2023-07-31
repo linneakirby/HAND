@@ -231,13 +231,11 @@ def calculate_cop(pv_dict):
     #print("COP IS RETURNING AS: ", cop[0], ",", cop[1])
     return cop
 
-def generate_cops(right, left):
-    rcop = calculate_cop(right)
-    lcop = calculate_cop(left)
+def generate_cops(h1, h2):
 
     both_hands = dict()
-    both_hands.update(right)
-    both_hands.update(left)
+    both_hands.update(h1)
+    both_hands.update(h2)
     actual_cop = calculate_cop(both_hands)
 
     ideal_hands = dict()
@@ -245,7 +243,14 @@ def generate_cops(right, left):
         ideal_hands[k] = 1
     ideal_cop = calculate_cop(ideal_hands)
 
-    return rcop, lcop, ideal_cop, actual_cop
+    cop1 = calculate_cop(h1)
+    cop2 = calculate_cop(h2)
+
+    if(cop1[1] < cop2[1]): #h1 is left hand
+        return cop2, cop1, ideal_cop, actual_cop, h2, h1
+    
+    #otherwise h1 is right hand
+    return cop1, cop2, ideal_cop, actual_cop, h1, h2
 
 def create_actuator_dict():
     actuators = dict()
@@ -361,9 +366,9 @@ def execute_instructions(hands_array, figure):
 
     if(coords_only):
 
-        r, l = isolate_hands(tm, kmeans, coords_only)
+        h1, h2 = isolate_hands(tm, kmeans, coords_only)
 
-        actual_rcop, actual_lcop, ideal_cop, actual_cop = generate_cops(r, l)
+        actual_rcop, actual_lcop, ideal_cop, actual_cop, r, l = generate_cops(h1, h2)
 
         actuators = create_actuator_dict()
 

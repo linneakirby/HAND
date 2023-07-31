@@ -39,18 +39,28 @@ class Pressure_Mat_Posture_Test(unittest.TestCase):
 
         self.assertEquals(len(kmeans.cluster_centers_), 2)
 
-    #make sure can find and separate 2 hands with a simple 2d mat
-    def test_isolate_hands(self):
+    #make sure can find and separate 2 UNORDERED hands with a simple 2d mat
+    def test_isolate_hands_unordered(self):
         m = np.array([[0.0, 0.0, 0.0], [1.0, 0.0, 2.0], [0.0,0.0,0.0]])
         kmeans, coords_only = pmp.run_kmeans(m, 2, 3, 3)
-        r, l = pmp.isolate_hands(m, kmeans, coords_only)
+        h1, h2 = pmp.isolate_hands(m, kmeans, coords_only)
 
         #merge hand dictionaries
         rl = dict()
-        rl.update(r)
-        rl.update(l)
+        rl.update(h1)
+        rl.update(h2)
     
         self.assertDictEqual(rl, {(1,2): 2.0, (1,0): 1.0})
+
+    def test_isolate_hands_ordered(self):
+        m = np.array([[0.0, 0.0, 0.0], [1.0, 0.0, 2.0], [0.0,0.0,0.0]])
+        kmeans, coords_only = pmp.run_kmeans(m, 2, 3, 3)
+        h1, h2 = pmp.isolate_hands(m, kmeans, coords_only)
+        actual_rcop, actual_lcop, ideal_cop, actual_cop, r, l = pmp.generate_cops(h1, h2)
+
+        self.assertEquals(r.get((1, 2)), 2.0)
+        self.assertEquals(l.get((1, 0)), 1.0)
+
 
 if __name__ == '__main__':
     unittest.main()
