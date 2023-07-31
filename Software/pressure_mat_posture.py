@@ -138,11 +138,11 @@ def get_port():
     ports = list(serial.tools.list_ports.grep("\/dev\/cu.usbmodem[0-9]{9}"))
     return ports[0].device
 
-def ndarray_to_2darray(nda, preserve_values=True):
-    two_d_array = np.zeros((ROWS, COLS))
-    for i in range(COLS):
+def ndarray_to_2darray(nda, preserve_values=True, r=ROWS, c=COLS):
+    two_d_array = np.zeros((r, c))
+    for i in range(c):
         tmp = ""
-        for j in range(ROWS):
+        for j in range(r):
             if(preserve_values):
                 tmp = int(nda[i][j])
                 two_d_array[i][j] = tmp
@@ -167,7 +167,7 @@ def generate_heatmap_plot(Z):
     plt.show()
 
 #run k clustering on self.Values: https://realpython.com/k-means-clustering-python/#how-to-perform-k-means-clustering-in-python
-def run_kmeans(Z, clusters=2):
+def run_kmeans(Z, clusters=2, r=ROWS, c=COLS):
     kmeans = KMeans(n_clusters=clusters)
 
     # Creates a new array with the coordinates only of each point with a nonzero
@@ -178,8 +178,8 @@ def run_kmeans(Z, clusters=2):
     coords_only = []
     index = 0
 
-    for row in range(ROWS):
-        for col in range(COLS):
+    for row in range(r):
+        for col in range(c):
             if Z[row][col]!=0:
                 coords_only.append([row, col])
                 #print("Appending: ", row, ",", col)
