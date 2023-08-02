@@ -124,7 +124,20 @@ class Pressure_Mat_Posture_Test(unittest.TestCase):
 
         self.assertEquals(vector, (tv[0], tv[1]))
 
-    
+    #make sure the actuators are selected properly using a simple mat example
+    def test_select_actuators(self):
+        m = np.array([[0.0, 0.0, 0.0], [1.0, 0.0, 2.0], [0.0,0.0,0.0]])
+        kmeans, coords_only = pmp.run_kmeans(m, 2, 3, 3)
+        h1, h2 = pmp.isolate_hands(m, kmeans, coords_only)
+        actual_rcop, actual_lcop, ideal_cop, actual_cop, r, l = pmp.generate_cops(h1, h2)
+        vector = pmp.create_vector(actual_cop, ideal_cop)
+        actuators = pmp.create_actuator_dict()
+        actuators = pmp.select_actuators(vector, actuators)
+
+        self.assertFalse(actuators['i'])
+        self.assertTrue(actuators['t'])
+        self.assertTrue(actuators['w'])
+        self.assertFalse(actuators['p'])
 
 
 if __name__ == '__main__':

@@ -275,22 +275,22 @@ def create_vector(start, end):
 #     acy > icy   |  acy > icy
 #                 W
 def select_actuators(vector, actuators):
-    if(vector[0] > 0 and vector[1] > 0): #top right (IT)
+    if(vector[0] >= 0 and vector[1] >= 0): #top right (IT)
         actuators['i'] = True
         actuators['t'] = True
         actuators['w'] = False
         actuators['p'] = False
-    elif(vector[0] > 0 and vector[1] < 0): #bottom right (TW)
+    elif(vector[0] >= 0 and vector[1] <= 0): #bottom right (TW)
         actuators['i'] = False
         actuators['t'] = True
         actuators['w'] = True
         actuators['p'] = False
-    elif(vector[0] < 0 and vector[1] < 0): #bottom left (WP)
+    elif(vector[0] <= 0 and vector[1] <= 0): #bottom left (WP)
         actuators['i'] = False
         actuators['t'] = False
         actuators['w'] = True
         actuators['p'] = True
-    elif(vector[0] < 0 and vector[1] > 0): #top left (PI)
+    elif(vector[0] <= 0 and vector[1] >= 0): #top left (PI)
         actuators['i'] = True
         actuators['t'] = False
         actuators['w'] = False
