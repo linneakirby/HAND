@@ -3,8 +3,8 @@ from pressure_mat_posture import *
 import numpy as np
 
 # Sensor rows + columns
-ROWS = 48 
-COLS = 48
+ROW_SIZE = 48 
+COL_SIZE = 48
 
 
 hands_array = np.load("./Testing/hands.npy")
@@ -25,8 +25,8 @@ kmeans = KMeans(n_clusters=2)
 coords_only = []
 index = 0
 
-for row in range(ROWS):
-    for col in range(COLS):
+for row in range(ROW_SIZE):
+    for col in range(COL_SIZE):
         if hands_array[row][col]!=0:
             coords_only.append([row, col])
         index+=1
@@ -36,8 +36,8 @@ kmeans.fit(coords_only)
 
 # I was tired of graphing so here is the worst possible visualization for this data
 index = 0
-for row in range(ROWS):
-    for col in range(COLS):
+for row in range(ROW_SIZE):
+    for col in range(COL_SIZE):
         if [row, col] in coords_only:
             if kmeans.labels_[index] == 1:
                 print('X', end="")

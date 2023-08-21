@@ -1,6 +1,8 @@
 import unittest
 import pressure_mat_posture as pmp
 import numpy as np
+import os
+import matplotlib.pyplot as plt
 
 class Pressure_Mat_Posture_Test(unittest.TestCase):
 
@@ -13,7 +15,7 @@ class Pressure_Mat_Posture_Test(unittest.TestCase):
         hands_array = np.load("./Testing/hands.npy")
         kmeans, coords_only = pmp.run_kmeans(hands_array)
 
-        self.assertEquals(len(kmeans.cluster_centers_), 2)
+        self.assertEqual(len(kmeans.cluster_centers_), 2)
 
     #make sure can create a mat data with empty values
     def test_create_mat_zeros(self):
@@ -34,14 +36,14 @@ class Pressure_Mat_Posture_Test(unittest.TestCase):
 
     #make sure can find 2 clusters with a simple 2d mat
     def test_kmeans(self):
-        m = np.array([[0.0, 0.0, 0.0], [1.0, 0.0, 1.0], [0.0,0.0,0.0]])
+        m = np.array([[0.0, 1.0, 0.0], [0.0, 0.0, 0.0], [0.0,2.0,0.0]])
         kmeans, coords_only = pmp.run_kmeans(m, 2, 3, 3)
 
-        self.assertEquals(len(kmeans.cluster_centers_), 2)
+        self.assertEqual(len(kmeans.cluster_centers_), 2)
 
     #make sure can find and separate 2 UNORDERED hands with a simple 2d mat
     def test_isolate_hands_unordered(self):
-        m = np.array([[0.0, 0.0, 0.0], [1.0, 0.0, 2.0], [0.0,0.0,0.0]])
+        m = np.array([[0.0, 1.0, 0.0], [0.0, 0.0, 0.0], [0.0, 2.0,0.0]])
         kmeans, coords_only = pmp.run_kmeans(m, 2, 3, 3)
         h1, h2 = pmp.isolate_hands(m, kmeans, coords_only)
 
@@ -50,41 +52,51 @@ class Pressure_Mat_Posture_Test(unittest.TestCase):
         rl.update(h1)
         rl.update(h2)
     
-        self.assertDictEqual(rl, {(1,2): 2.0, (1,0): 1.0})
+        self.assertDictEqual(rl, {(2,1): 2.0, (0,1): 1.0})
 
     def test_isolate_hands_ordered(self):
-        m = np.array([[0.0, 0.0, 0.0], [1.0, 0.0, 2.0], [0.0,0.0,0.0]])
+        m = np.array([[0.0, 1.0, 0.0], [0.0, 0.0, 0.0], [0.0, 2.0,0.0]])
         kmeans, coords_only = pmp.run_kmeans(m, 2, 3, 3)
         h1, h2 = pmp.isolate_hands(m, kmeans, coords_only)
         actual_rcop, actual_lcop, ideal_cop, actual_cop, r, l = pmp.generate_cops(h1, h2)
 
-        self.assertEquals(r.get((1, 2)), 2.0)
-        self.assertEquals(l.get((1, 0)), 1.0)
+        # print("r: ", r)
+        # print("l: ", l)
+
+        # for j in range(3-1, -1, -1):
+        #     tmp = ""
+        #     for i in range(3):
+        #         tmp = tmp +   hex(int(m[i][j]))[-1]
+        #     print(tmp)
+        # print("\n")
+
+        self.assertEqual(r.get((2, 1)), 2.0)
+        self.assertEqual(l.get((0, 1)), 1.0)
 
     #make sure the basic cop calculation function works
     def test_calculate_cop(self):
         weighted_coords = dict()
-        weighted_coords[(1.0, 2.0)] = 2.0
-        weighted_coords[(1.0, 0.0)] = 1.0
+        weighted_coords[(2.0, 1.0)] = 2.0
+        weighted_coords[(0.0, 1.0)] = 1.0
 
         unweighted_coords = dict()
-        unweighted_coords[(1.0, 2.0)] = 1.0
-        unweighted_coords[(1.0, 0.0)] = 1.0
+        unweighted_coords[(2.0, 1.0)] = 1.0
+        unweighted_coords[(0.0, 1.0)] = 1.0
 
-        self.assertEquals(pmp.calculate_cop(weighted_coords),[1.0, 4.0/3.0])
-        self.assertEquals(pmp.calculate_cop(unweighted_coords), [1.0, 1.0])
+        self.assertEqual(pmp.calculate_cop(weighted_coords),[4.0/3.0, 1.0])
+        self.assertEqual(pmp.calculate_cop(unweighted_coords), [1.0, 1.0])
 
     #make sure it's doing all the calculations properly on a simple mat example
     def test_cop_calculations(self):
-        m = np.array([[0.0, 0.0, 0.0], [1.0, 0.0, 2.0], [0.0,0.0,0.0]])
+        m = np.array([[0.0, 1.0, 0.0], [0.0, 0.0, 0.0], [0.0, 2.0,0.0]])
         kmeans, coords_only = pmp.run_kmeans(m, 2, 3, 3)
         h1, h2 = pmp.isolate_hands(m, kmeans, coords_only)
         actual_rcop, actual_lcop, ideal_cop, actual_cop, r, l = pmp.generate_cops(h1, h2)
 
-        self.assertEquals(actual_rcop, [1.0, 2.0])
-        self.assertEquals(actual_lcop, [1.0, 0.0])
-        self.assertEquals(actual_cop, [1.0, 4.0/3.0])
-        self.assertEquals(ideal_cop, [1.0, 1.0])
+        self.assertEqual(actual_rcop, [2.0, 1.0])
+        self.assertEqual(actual_lcop, [0.0, 1.0])
+        self.assertEqual(actual_cop, [4.0/3.0, 1.0])
+        self.assertEqual(ideal_cop, [1.0, 1.0])
 
     #probably doesn't need to be a test but w/e
     def test_create_actuators(self):
@@ -96,37 +108,37 @@ class Pressure_Mat_Posture_Test(unittest.TestCase):
         test_a['t'] = False #thumb
 
         self.assertIsInstance(a, dict)
-        self.assertEquals(a, test_a)
+        self.assertEqual(a, test_a)
 
     #make sure the basic vector calculation function works
     def test_create_vector(self):
-        t1 = [1.0, 4.0/3.0]
+        t1 = [4.0/3.0, 1.0]
         t2 = [1.0, 1.0]
         tv = [0.0, 0.0]
         tv[0] = t2[0] - t1[0]
         tv[1] = t2[1] - t1[1]
 
-        self.assertEquals(pmp.create_vector(t1, t2), (tv[0], tv[1]))
+        self.assertEqual(pmp.create_vector(t1, t2), (tv[0], tv[1]))
 
     #make sure the vector is calculated properly using a simple mat example
     def test_vector(self):
-        m = np.array([[0.0, 0.0, 0.0], [1.0, 0.0, 2.0], [0.0,0.0,0.0]])
+        m = np.array([[0.0, 1.0, 0.0], [0.0, 0.0, 0.0], [0.0, 2.0,0.0]])
         kmeans, coords_only = pmp.run_kmeans(m, 2, 3, 3)
         h1, h2 = pmp.isolate_hands(m, kmeans, coords_only)
         actual_rcop, actual_lcop, ideal_cop, actual_cop, r, l = pmp.generate_cops(h1, h2)
         vector = pmp.create_vector(actual_cop, ideal_cop)
 
-        t1 = [1.0, 4.0/3.0]
+        t1 = [4.0/3.0, 1.0]
         t2 = [1.0, 1.0]
         tv = [0.0, 0.0]
         tv[0] = t2[0] - t1[0]
         tv[1] = t2[1] - t1[1]
 
-        self.assertEquals(vector, (tv[0], tv[1]))
+        self.assertEqual(vector, (tv[0], tv[1]))
 
     #make sure the actuators are selected properly using a simple mat example
     def test_select_actuators(self):
-        m = np.array([[0.0, 0.0, 0.0], [1.0, 0.0, 2.0], [0.0,0.0,0.0]])
+        m = np.array([[0.0, 1.0, 0.0], [0.0, 0.0, 0.0], [0.0, 2.0,0.0]])
         kmeans, coords_only = pmp.run_kmeans(m, 2, 3, 3)
         h1, h2 = pmp.isolate_hands(m, kmeans, coords_only)
         actual_rcop, actual_lcop, ideal_cop, actual_cop, r, l = pmp.generate_cops(h1, h2)
@@ -135,9 +147,31 @@ class Pressure_Mat_Posture_Test(unittest.TestCase):
         actuators = pmp.select_actuators(vector, actuators)
 
         self.assertFalse(actuators['i'])
-        self.assertTrue(actuators['t'])
+        self.assertFalse(actuators['t'])
         self.assertTrue(actuators['w'])
-        self.assertFalse(actuators['p'])
+        self.assertTrue(actuators['p'])
+
+    def test_scatter_plot_integrated(self):
+        m = np.load(os.getcwd() + "/Testing/hands.npy")
+        tm = np.rot90(m, 2)
+        kmeans, coords_only = pmp.run_kmeans(tm)
+        h1, h2 = pmp.isolate_hands(tm, kmeans, coords_only)
+        actual_rcop, actual_lcop, ideal_cop, actual_cop, r, l = pmp.generate_cops(h1, h2)
+        vector = pmp.create_vector(actual_cop, ideal_cop)
+        actuators = pmp.create_actuator_dict()
+        actuators = pmp.select_actuators(vector, actuators)
+
+        figure, ax = plt.subplots(figsize=(5,5))
+        plt.ion()
+        pmp.generate_scatter_plot(kmeans, coords_only, actual_rcop, actual_lcop, ideal_cop, actual_cop, figure)
+        plt.show()
+
+        #print(actuators)
+
+        self.assertTrue(actuators['i'])
+        self.assertTrue(actuators['p'])
+        self.assertFalse(actuators['w'])
+        self.assertFalse(actuators['t'])
 
 
 if __name__ == '__main__':

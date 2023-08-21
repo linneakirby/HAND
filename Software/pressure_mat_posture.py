@@ -1,7 +1,6 @@
 # Standard libraries
 import sys
 import time
-from pynput import keyboard
 
 # Third-party libraries
 import matplotlib.pyplot as plt
@@ -12,8 +11,8 @@ np.set_printoptions(threshold=sys.maxsize)
 from flask import Flask
 
 # Default parameters
-ROWS = 48  # Rows of the sensor
-COLS = 48  # Columns of the sensor
+ROW_SIZE = 48  # Rows of the sensor
+COL_SIZE = 48  # Columns of the sensor
 DEFAULT_PORT = '/dev/cu.usbmodem104742601'
 FIG_PATH = './Results/contour.png'
 
@@ -31,14 +30,14 @@ class Mat:
             port,
             baudrate=115200,
             timeout=0.1)
-        self.Values = np.zeros((ROWS, COLS))
+        self.Values = np.zeros((ROW_SIZE, COL_SIZE))
 
     def request_pressure_map(self):
         data = "R"
         self.ser.write(data.encode())
 
     def active_points_receive_map(self):
-        matrix = np.zeros((ROWS, COLS), dtype=int)
+        matrix = np.zeros((ROW_SIZE, COL_SIZE), dtype=int)
 
         xbyte = self.ser.read().decode('utf-8')
 
@@ -103,9 +102,9 @@ class Mat:
             generate_heatmap_plot(Z)
 
     def print_matrix(self):
-        for i in range(COLS):
+        for i in range(COL_SIZE):
             tmp = ""
-            for j in range(ROWS):
+            for j in range(ROW_SIZE):
                 tmp = tmp +   hex(int(self.Values[i][j]))[-1]
             print(tmp)
         print("\n")
@@ -114,9 +113,9 @@ class Mat:
 def transform_matrix_180(Z):
     # copy and shift matrix
     matrix_dict = dict()
-    for row in range(ROWS):
-        for col in range(COLS):
-            matrix_dict[(row-ROWS//2, col-COLS//2)] = Z[row][col]
+    for row in range(ROW_SIZE):
+        for col in range(COL_SIZE):
+            matrix_dict[(row-ROW_SIZE//2, col-COL_SIZE//2)] = Z[row][col]
     # rotate matrix
     rotated_dict = dict()
     for point in matrix_dict:
@@ -125,9 +124,9 @@ def transform_matrix_180(Z):
         rotated_dict[(x,y)] = matrix_dict[point]
 
     # shift matrix back and reconstruct ndarray
-    ret_matrix = np.zeros((ROWS, COLS), dtype=int)
+    ret_matrix = np.zeros((ROW_SIZE, COL_SIZE), dtype=int)
     for point in rotated_dict:
-        ret_matrix[point[0]+ROWS//2-1][point[1]+COLS//2-1] = rotated_dict[point]
+        ret_matrix[point[0]+ROW_SIZE//2-1][point[1]+COL_SIZE//2-1] = rotated_dict[point]
     return ret_matrix
 
 
@@ -138,7 +137,7 @@ def get_port():
     ports = list(serial.tools.list_ports.grep("\/dev\/cu.usbmodem[0-9]{9}"))
     return ports[0].device
 
-def ndarray_to_2darray(nda, preserve_values=True, r=ROWS, c=COLS):
+def ndarray_to_2darray(nda, preserve_values=True, r=ROW_SIZE, c=COL_SIZE):
     two_d_array = np.zeros((r, c))
     for i in range(c):
         tmp = ""
@@ -155,7 +154,7 @@ def generate_contour_plot(Z):
     plt.ion()
     fig, ax = plt.subplots(figsize=(5,5))
 
-    ax.contourf(np.arange(0, ROWS), np.arange(0, COLS), Z, levels=7, cmap="nipy_spectral")
+    ax.contourf(np.arange(0, ROW_SIZE), np.arange(0, COL_SIZE), Z, levels=7, cmap="nipy_spectral")
 
     plt.draw()
     # plt.savefig(FIG_PATH)
@@ -167,7 +166,7 @@ def generate_heatmap_plot(Z):
     plt.show()
 
 #run k clustering on self.Values: https://realpython.com/k-means-clustering-python/#how-to-perform-k-means-clustering-in-python
-def run_kmeans(Z, clusters=2, r=ROWS, c=COLS):
+def run_kmeans(Z, clusters=2, r=ROW_SIZE, c=COL_SIZE):
     kmeans = KMeans(n_clusters=clusters)
 
     # Creates a new array with the coordinates only of each point with a nonzero
@@ -199,8 +198,8 @@ def isolate_hands(Z, kmeans, coords_only):
     index = 0
     right_index = 0
     left_index = 0
-    for row in range(ROWS):
-        for col in range(COLS):
+    for row in range(ROW_SIZE):
+        for col in range(COL_SIZE):
             #print("Looking at: ", row, ",",col)
             if ([row, col] in coords_only):
                 if (kmeans.labels_[index] == 0): #right
@@ -246,11 +245,18 @@ def generate_cops(h1, h2):
     cop1 = calculate_cop(h1)
     cop2 = calculate_cop(h2)
 
-    if(cop1[1] < cop2[1]): #h1 is left hand
+    #print("cop1: ", cop1)
+    #print("cop2: ", cop2)
+
+    if(cop1[0] < cop2[0]): #h1 is left hand
+        #print("h1 is LEFT hand")
         return cop2, cop1, ideal_cop, actual_cop, h2, h1
     
     #otherwise h1 is right hand
-    return cop1, cop2, ideal_cop, actual_cop, h1, h2
+    else:
+        #print("h1 is RIGHT hand")
+        return cop1, cop2, ideal_cop, actual_cop, h1, h2
+
 
 def create_actuator_dict():
     actuators = dict()
@@ -298,11 +304,11 @@ def select_actuators(vector, actuators):
 
     return actuators
 
-def generate_scatter_plot(kmeans, coords_only, rcop, lcop, ideal_cop, actual_cop, figure):
+def generate_scatter_plot(kmeans, coords_only, rcop, lcop, ideal_cop, actual_cop, figure, r=ROW_SIZE, c=COL_SIZE):
     # TODO: refactor this so it uses the left and right dicts
     index = 0
-    for row in range(ROWS):
-        for col in range(COLS):
+    for row in range(r):
+        for col in range(c):
             if [row, col] in coords_only:
                 if kmeans.labels_[index] == 1:
                     plt.scatter(
@@ -357,10 +363,20 @@ def generate_scatter_plot(kmeans, coords_only, rcop, lcop, ideal_cop, actual_cop
     figure.canvas.flush_events()
 
 
+def print_ascii(matrix):
+        for j in range(COL_SIZE-1, -1, -1):
+            tmp = ""
+            for i in range(ROW_SIZE):
+                tmp = tmp +   hex(int(matrix[i][j]))[-1]
+            print(tmp)
+        print("\n")
+
+
 def execute_instructions(hands_array, figure):
     parameters_dict = dict()
     tm = hands_array
-    # tm = transform_matrix_180(hands_array)
+    tm = np.rot90(hands_array, 2) # make it right-side up
+
 
     kmeans, coords_only = run_kmeans(tm)
 
@@ -391,37 +407,17 @@ def execute_instructions(hands_array, figure):
 
     return parameters_dict
 
-def on_press(key):
-    try:
-        print('alphanumeric key {0} pressed'.format(
-            key.char))
-    except AttributeError:
-        print('special key {0} pressed'.format(
-            key))
-
-def on_release(key):
-    print('{0} released'.format(
-        key))
-    if key == keyboard.Key.esc:
-        # Stop listener
-        return False
-
 def main():
     mat = Mat(get_port())
-    # with keyboard.Listener(
-    #     on_press=on_press,
-    #     on_release=on_release) as listener:
-    #     listener.join
-    while True:
-        mat.get_matrix()
-        if CONSOLE:
-            mat.print_matrix()
+    mat.get_matrix()
+    if CONSOLE:
+        mat.print_matrix()
         
-        fig, ax = plt.subplots(figsize=(5,5))
-        plt.ion()
-        execute_instructions(mat.Values, fig)
-        plt.show()
-        time.sleep(0.1)
+    fig, ax = plt.subplots(figsize=(5,5))
+    plt.ion()
+    execute_instructions(mat.Values, fig)
+    plt.show()
+    time.sleep(0.1)
 
 if __name__ == '__main__':
     main()
