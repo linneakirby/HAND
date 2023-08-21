@@ -192,27 +192,27 @@ def run_kmeans(Z, clusters=2, r=ROW_SIZE, c=COL_SIZE):
 
 def isolate_hands(Z, kmeans, coords_only):
 
-    right = dict()
-    left = dict()
+    h1 = dict()
+    h2 = dict()
 
     index = 0
-    right_index = 0
-    left_index = 0
+    h1_index = 0
+    h2_index = 0
     for row in range(ROW_SIZE):
         for col in range(COL_SIZE):
             #print("Looking at: ", row, ",",col)
             if ([row, col] in coords_only):
                 if (kmeans.labels_[index] == 0): #right
-                    #print("Adding to RIGHT\nkey: ", row, ",", col, "\nvalue: ", Z[row][col])
-                    right[(row, col)] = (Z[row][col])
-                    right_index+=1
+                    #print("Adding to h1\nkey: ", row, ",", col, "\nvalue: ", Z[row][col])
+                    h1[(row, col)] = (Z[row][col])
+                    h1_index+=1
                 if (kmeans.labels_[index] == 1): #left
-                    #print("Adding to LEFT\nkey: ", row, ",", col, "\nvalue: ", Z[row][col])
-                    left[(row, col)] = (Z[row][col])
-                    left_index+=1
+                    #print("Adding to h2\nkey: ", row, ",", col, "\nvalue: ", Z[row][col])
+                    h2[(row, col)] = (Z[row][col])
+                    h2_index+=1
                 index+=1
 
-    return right, left
+    return h1, h2
 
 # based off of http://hyperphysics.phy-astr.gsu.edu/hbase/cm.html
 def calculate_cop(pv_dict):

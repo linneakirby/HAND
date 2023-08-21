@@ -14,11 +14,15 @@ FIG_PATH = './Results/contour.png'
 
 class Mat:
     def __init__(self, port):
-        self.ser = serial.Serial(
-            port,
-            baudrate=115200,
-            timeout=0.1)
-        self.Values = np.zeros((ROW_SIZE, COL_SIZE))
+        #if only a frame, i.e. for testing
+        if isinstance(port, np.ndarray):
+            self.Values = port
+        else:
+            self.ser = serial.Serial(
+                port,
+                baudrate=115200,
+                timeout=0.1)
+            self.Values = np.zeros((ROW_SIZE, COL_SIZE))
 
     def request_pressure_map(self):
         data = "R"
