@@ -27,4 +27,4 @@ The software is broken down into several files to create a HAND library:
   - executable file to run the HAND software
 
 ### Testing
-The mat software can be tested by running the "start" shell script, which allows the user to interact with a preloaded snapshot of the mat output.
+The mat software can be tested by running "haptic_assisted_inversions_device.py" which contains unittest test cases.
