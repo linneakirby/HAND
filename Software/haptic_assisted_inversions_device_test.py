@@ -144,11 +144,8 @@ class Haptic_Assisted_Inversions_Device_Test(unittest.TestCase):
         h.run_kmeans(m.Values, 3, 3)
         h.isolate_hands(m.Values)
         h.generate_cops()
-
-        hm = Hand_metadata(h)
-        hm.generate_cops()
-        hm.find_correction_vector()
-        hm.select_actuators()
+        h.find_correction_vector()
+        h.select_actuators()
 
         t1 = [4.0/3.0, 1.0]
         t2 = [1.0, 1.0]
@@ -156,7 +153,7 @@ class Haptic_Assisted_Inversions_Device_Test(unittest.TestCase):
         tv[0] = t2[0] - t1[0]
         tv[1] = t2[1] - t1[1]
 
-        self.assertEqual(hm.correction_vector, (tv[0], tv[1]))
+        self.assertEqual(h.correction_vector, (tv[0], tv[1]))
 
     #make sure the actuators are selected properly using a simple mat example
     def test_select_actuators(self):
@@ -167,16 +164,13 @@ class Haptic_Assisted_Inversions_Device_Test(unittest.TestCase):
         h.run_kmeans(m.Values, 3, 3)
         h.isolate_hands(m.Values)
         h.generate_cops()
+        h.find_correction_vector()
+        h.select_actuators()
 
-        hm = Hand_metadata(h)
-        hm.generate_cops()
-        hm.find_correction_vector()
-        hm.select_actuators()
-
-        self.assertFalse(hm.actuators['i'])
-        self.assertFalse(hm.actuators['t'])
-        self.assertTrue(hm.actuators['w'])
-        self.assertTrue(hm.actuators['p'])
+        self.assertFalse(h.actuators.index.is_on())
+        self.assertFalse(h.actuators.right.is_on())
+        self.assertTrue(h.actuators.wrist.is_on())
+        self.assertTrue(h.actuators.left.is_on())
 
     def test_scatter_plot_integrated(self):
         hands_array = np.load(os.getcwd() + "/Testing/hands.npy")
@@ -187,23 +181,20 @@ class Haptic_Assisted_Inversions_Device_Test(unittest.TestCase):
         h.run_kmeans(tm)
         h.isolate_hands(tm)
         h.generate_cops()
-
-        hm = Hand_metadata(h)
-        hm.generate_cops()
-        hm.find_correction_vector()
-        hm.select_actuators()
+        h.find_correction_vector()
+        h.select_actuators()
 
         figure, ax = plt.subplots(figsize=(5,5))
         plt.ion()
-        hand_utils.generate_scatter_plot(h.kmeans, h.coords_only, h.rcop, h.lcop, hm.ideal_cop, hm.cop, figure)
+        hand_utils.generate_scatter_plot(h.kmeans, h.coords_only, h.get_right_hand().get_cop(), h.get_left_hand().get_cop(), h.ideal_cop, h.cop, figure)
         plt.show()
 
         #print(actuators)
 
-        self.assertTrue(hm.actuators['i'])
-        self.assertTrue(hm.actuators['p'])
-        self.assertFalse(hm.actuators['w'])
-        self.assertFalse(hm.actuators['t'])
+        self.assertTrue(h.actuators.index.is_on())
+        self.assertTrue(h.actuators.right.is_on())
+        self.assertFalse(h.actuators.wrist.is_on())
+        self.assertFalse(h.actuators.left.is_on())
 
 
 if __name__ == '__main__':

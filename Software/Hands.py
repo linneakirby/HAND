@@ -3,6 +3,7 @@ import sys
 
 # My libraries
 import hand_utils
+from Actuators import *
 
 # Third-party libraries
 import numpy as np
@@ -15,20 +16,54 @@ COL_SIZE = 48  # Columns of the sensor
 DEFAULT_PORT = '/dev/cu.usbmodem104742601'
 FIG_PATH = './Results/contour.png'
 
+class Hand:
+    def __init__(self):
+        self.is_right = False
+        self.is_left = False
+        self.cop = [0, 0]
+        self.points = dict()
+
+    def is_right(self):
+        return self.is_right
+    
+    def is_left(self):
+        return self.is_left
+    
+    def set_right(self, cop=0.0):
+        self.is_right = True
+        self.is_left = False
+        self.cop = cop
+
+    def set_left(self, cop=0.0):
+        self.is_right = False
+        self.is_left = True
+        self.cop = cop
+    
+    def get_cop(self):
+        return self.cop
+    
+    def set_cop(self, cop):
+        self.cop = cop
+
+    def add_point(self, p, v):
+        self.points[p] = v
+
+    def remove_point(self, p):
+        self.points.pop(p)
+
+    def get_points(self):
+        return self.points
+
 class Hands:
     def __init__(self, clusters=2):
         #unordered hands
-        self.h1 = dict()
-        self.h2 = dict()
+        self.h1 = Hand()
+        self.h2 = Hand()
         self.kmeans = KMeans(n_clusters=clusters)
         self.coords_only = []
-
-        #ordered hands
-        self.right = dict()
-        self.left = dict()
-        self.rl = dict()
-        self.rcop = [0,0]
-        self.lcop = [0,0]
+        self.ideal_cop = [0,0]
+        self.correction_vector = [0.0, 0.0]
+        self.actuators = Actuator_manager()
 
     def run_kmeans(self, Z, r=ROW_SIZE, c=COL_SIZE):
 
@@ -55,7 +90,6 @@ class Hands:
     # isolates and separates hands
     # note that hands are UNORDERED
     def isolate_hands(self, Z):
-
         index = 0
         h1_index = 0
         h2_index = 0
@@ -65,101 +99,70 @@ class Hands:
                 if ([row, col] in self.coords_only):
                     if (self.kmeans.labels_[index] == 0): #right
                         #print("Adding to RIGHT\nkey: ", row, ",", col, "\nvalue: ", Z[row][col])
-                        self.h1[(row, col)] = (Z[row][col])
+                        self.h1.add_point((row, col), Z[row][col])
                         h1_index+=1
                     if (self.kmeans.labels_[index] == 1): #left
                         #print("Adding to LEFT\nkey: ", row, ",", col, "\nvalue: ", Z[row][col])
-                        self.h2[(row, col)] = (Z[row][col])
+                        self.h2.add_point((row, col), Z[row][col])
                         h2_index+=1
                     index+=1
 
-        return self.h1, self.h2
     
     def generate_cops(self):
         cop1 = hand_utils.calculate_cop(self.h1)
         cop2 = hand_utils.calculate_cop(self.h2)
 
-        #print("cop1: ", cop1)
-        #print("cop2: ", cop2)
-
         if(cop1[0] < cop2[0]): #h1 is left hand
-            #print("h1 is LEFT hand")
-            self.rcop = cop2
-            self.lcop = cop1
-            self.right = self.h2
-            self.left = self.h1
-            self.rl.update(self.right)
-            self.rl.update(self.left)
-            return self.rcop, self.lcop, self.right, self.left
+            self.h2.set_right(cop2)
+            self.h1.set_left(cop1)
         
         #otherwise h1 is right hand
         else:
-            #print("h1 is RIGHT hand")
-            self.rcop = cop1
-            self.lcop = cop2
-            self.right = self.h1
-            self.left = self.h2
-            self.rl.update(self.right)
-            self.rl.update(self.left)
-            return self.rcop, self.lcop, self.right, self.left
-        
-class Hand_metadata:
-    def __init__(self, hands: Hands):
-        self.hands = hands
-        self.both_hands = dict()
-        self.right = dict()
-        self.left = dict()
-        self.cop = [0,0]
-        self.ideal_cop = [0,0]
-        self.correction_vector = [0.0, 0.0]
-        self.actuators = {"i": False, "t": False, "w": False, "p": False}
+            self.h1.set_right(cop1)
+            self.h2.set_left(cop2)
 
-    def generate_cops(self):
-
-        self.both_hands.update(self.hands.h1)
-        self.both_hands.update(self.hands.h2)
-        self.cop = hand_utils.calculate_cop(self.both_hands)
+        both_hands = dict()
+        both_hands.update(self.h1.get_points())
+        both_hands.update(self.h2.get_points())
+        self.cop = hand_utils.calculate_cop(both_hands)
 
         ideal_hands = dict()
-        for k in self.both_hands.keys():
+        for k in both_hands.keys():
             ideal_hands[k] = 1
         self.ideal_cop = hand_utils.calculate_cop(ideal_hands)
-
-        return self.ideal_cop, self.cop
     
     def find_correction_vector(self):
         self.correction_vector = hand_utils.create_vector(self.cop, self.ideal_cop)
         return self.correction_vector
     
-    # quadrant determines which actuators to activate
-    #                 I
-    #     acx > icx   |  acx < icx
-    #     acy < icy   |  acy < icy
-    # P --------------•--------------- T
-    #     acx > icx   |  acx < icx
-    #     acy > icy   |  acy > icy
-    #                 W
+    # quadrant vector lands in determines which actuators to activate
+    #      I
+    #      |  
+    # L ---•--- R
+    #      |  
+    #      W
     def select_actuators(self):
-        if(self.correction_vector[0] >= 0 and self.correction_vector[1] >= 0): #top right (IT)
-            self.actuators['i'] = True
-            self.actuators['t'] = True
-            self.actuators['w'] = False
-            self.actuators['p'] = False
-        elif(self.correction_vector[0] >= 0 and self.correction_vector[1] <= 0): #bottom right (TW)
-            self.actuators['i'] = False
-            self.actuators['t'] = True
-            self.actuators['w'] = True
-            self.actuators['p'] = False
-        elif(self.correction_vector[0] <= 0 and self.correction_vector[1] <= 0): #bottom left (WP)
-            self.actuators['i'] = False
-            self.actuators['t'] = False
-            self.actuators['w'] = True
-            self.actuators['p'] = True
-        elif(self.correction_vector[0] <= 0 and self.correction_vector[1] >= 0): #top left (PI)
-            self.actuators['i'] = True
-            self.actuators['t'] = False
-            self.actuators['w'] = False
-            self.actuators['p'] = True
+        #x value
+        if(self.correction_vector[0] >= 0): 
+            self.actuators.activate_right()
+        else:
+            self.actuators.activate_left()
+
+        #y value
+        if(self.correction_vector[1] >= 0):
+            self.actuators.activate_index()
+        else:
+            self.actuators.activate_wrist()
 
         return self.actuators
+    
+    def get_right_hand(self):
+        if(self.h1.is_right()):
+            return self.h1
+        return self.h2
+    
+    def get_left_hand(self):
+        if(self.h1.is_left()):
+            return self.h1
+        return self.h2
 
