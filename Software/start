@@ -1,3 +1,0 @@
-#!/usr/bin/env bash
-pyenv version hand
-ipython -i pressure_mat_interactive.py

@@ -4,7 +4,7 @@ import time
 
 # My libraries
 import Mat
-import Hands
+from Hands import *
 import hand_utils
 
 # Third-party libraries
