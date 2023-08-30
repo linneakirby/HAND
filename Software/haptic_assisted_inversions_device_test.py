@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 
 # My libraries
 from Mat import Mat
-from Hands import Hands, Hand_metadata
+from Hands import *
 import hand_utils
 import haptic_assisted_inversions_device as hand
 

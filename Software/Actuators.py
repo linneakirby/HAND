@@ -62,7 +62,7 @@ class Actuator_manager:
 
     def activate_wrist(self):
         self.wrist.turn_on()
-        self.wrist.turn_off()
+        self.index.turn_off()
 
     def activate_left(self):
         self.left.turn_on()
