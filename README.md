@@ -11,7 +11,7 @@ Schematics for the gloves can be found in the "Technical Docs" folder under "Glo
 Firmware for the gloves can be found in the "Software/Arduino" folder. In Arduino, the board is considered a "Generic ESP8266 Module" and is part of the "ESP8266 Boards" library.
 
 ## Mat Software
-The mat software is written in Python3 and can be found in the "Software" folder as "pressure_mat_posture.py". 
+The mat software is written in Python3 and can be found in the "Software" folder. 
 
 ### Dependencies
 - sys
@@ -41,4 +41,13 @@ The software is broken down into several files to create a HAND library.
 - executable file to run the HAND software
 
 ### Testing
-The mat software can be tested by running "haptic_assisted_inversions_device.py" which contains unittest test cases.
+The "Testing" folder contains files helpful for testing the HAND library.
+
+#### haptic_assisted_inversions_device_test.py
+- contains unittest test cases for the HAND library
+
+#### hands.npy
+- contains a numpy array snapshot of data received from a Mat object.
+
+#### hands.txt
+- same data contained in "hands.npy" but as a simple array within a text file without the numpy array formatting

@@ -1,3 +1,6 @@
+import sys
+sys.path.append("../")
+
 import unittest
 import pressure_mat_posture as pmp
 import numpy as np
@@ -8,11 +11,11 @@ class Pressure_Mat_Posture_Test(unittest.TestCase):
 
     #make sure mat data can be accessed
     def test_load_mat_data(self):
-        self.assertIsInstance(np.load("./Testing/hands.npy"), np.ndarray)
+        self.assertIsInstance(np.load("./hands.npy"), np.ndarray)
 
     #make sure there are only 2 clusters
     def test_k_means(self):
-        hands_array = np.load("./Testing/hands.npy")
+        hands_array = np.load("./hands.npy")
         kmeans, coords_only = pmp.run_kmeans(hands_array)
 
         self.assertEqual(len(kmeans.cluster_centers_), 2)
@@ -152,7 +155,7 @@ class Pressure_Mat_Posture_Test(unittest.TestCase):
         self.assertTrue(actuators['p'])
 
     def test_scatter_plot_integrated(self):
-        m = np.load(os.getcwd() + "/Testing/hands.npy")
+        m = np.load(os.getcwd() + "/hands.npy")
         tm = np.rot90(m, 2)
         kmeans, coords_only = pmp.run_kmeans(tm)
         h1, h2 = pmp.isolate_hands(tm, kmeans, coords_only)

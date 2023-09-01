@@ -1,3 +1,6 @@
+import sys
+sys.path.append("../")
+
 import unittest
 import numpy as np
 import os
@@ -13,14 +16,14 @@ class Haptic_Assisted_Inversions_Device_Test(unittest.TestCase):
 
     #make sure mat data can be accessed
     def test_load_mat_data(self):
-        hands_array = np.load("./Testing/hands.npy")
+        hands_array = np.load("./hands.npy")
         m = Mat(hands_array)
         self.assertIsInstance(m.Values, np.ndarray)
 
     #make sure there are only 2 clusters
     def test_k_means(self):
         h = Hands()
-        hands_array = np.load("./Testing/hands.npy")
+        hands_array = np.load("./hands.npy")
         h.run_kmeans(hands_array)
 
         self.assertEqual(len(h.kmeans.cluster_centers_), 2)
@@ -173,7 +176,7 @@ class Haptic_Assisted_Inversions_Device_Test(unittest.TestCase):
         self.assertTrue(h.actuators.left.is_on())
 
     def test_scatter_plot_integrated(self):
-        hands_array = np.load(os.getcwd() + "/Testing/hands.npy")
+        hands_array = np.load(os.getcwd() + "/hands.npy")
         m = Mat(hands_array)
         tm = np.rot90(m.Values, 2)
 
