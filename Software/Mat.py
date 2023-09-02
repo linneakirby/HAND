@@ -70,6 +70,10 @@ class Mat:
             else:
                 self.ser.flush()
 
+    def get_matrix(self):
+        self.request_pressure_map()
+        self.active_points_get_map()
+
 
     def __str__(self):
         s = ""
