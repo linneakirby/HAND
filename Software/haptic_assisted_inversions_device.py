@@ -3,7 +3,7 @@ import sys
 import time
 
 # My libraries
-import Mat
+from Mat import *
 from Hands import *
 import hand_utils
 
@@ -38,4 +38,4 @@ def process_mat_data(d):
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8090)
-    time.sleep(0.1)
+    # time.sleep(0.1) # not sure if server should sleep or if it should all be on the gloves' end
