@@ -18,32 +18,32 @@ FIG_PATH = './Results/contour.png'
 
 class Hand:
     def __init__(self):
-        self.is_right = False
-        self.is_left = False
+        self.right = False
+        self.left = False
         self.cop = [0, 0]
         self.points = dict()
 
     def is_right(self):
-        return self.is_right
+        return self.right
     
     def is_left(self):
-        return self.is_left
+        return self.left
     
-    def set_right(self, cop=0.0):
-        self.is_right = True
-        self.is_left = False
-        self.cop = cop
+    def set_right(self, c=[0, 0]):
+        self.right = True
+        self.left = False
+        self.cop = c
 
-    def set_left(self, cop=0.0):
-        self.is_right = False
-        self.is_left = True
-        self.cop = cop
+    def set_left(self, c=[0 ,0]):
+        self.right = False
+        self.left = True
+        self.cop = c
     
     def get_cop(self):
         return self.cop
     
-    def set_cop(self, cop):
-        self.cop = cop
+    def set_cop(self, c):
+        self.cop = c
 
     def add_point(self, p, v):
         self.points[p] = v
@@ -97,20 +97,20 @@ class Hands:
             for col in range(COL_SIZE):
                 #print("Looking at: ", row, ",",col)
                 if ([row, col] in self.coords_only):
-                    if (self.kmeans.labels_[index] == 0): #right
-                        #print("Adding to RIGHT\nkey: ", row, ",", col, "\nvalue: ", Z[row][col])
+                    if (self.kmeans.labels_[index] == 0): #h1
+                        #print("Adding to h1\nkey: ", row, ",", col, "\nvalue: ", Z[row][col])
                         self.h1.add_point((row, col), Z[row][col])
                         h1_index+=1
-                    if (self.kmeans.labels_[index] == 1): #left
-                        #print("Adding to LEFT\nkey: ", row, ",", col, "\nvalue: ", Z[row][col])
+                    if (self.kmeans.labels_[index] == 1): #h2
+                        #print("Adding to h2\nkey: ", row, ",", col, "\nvalue: ", Z[row][col])
                         self.h2.add_point((row, col), Z[row][col])
                         h2_index+=1
                     index+=1
 
     
     def generate_cops(self):
-        cop1 = hand_utils.calculate_cop(self.h1)
-        cop2 = hand_utils.calculate_cop(self.h2)
+        cop1 = hand_utils.calculate_cop(self.h1.get_points())
+        cop2 = hand_utils.calculate_cop(self.h2.get_points())
 
         if(cop1[0] < cop2[0]): #h1 is left hand
             self.h2.set_right(cop2)
@@ -165,4 +165,16 @@ class Hands:
         if(self.h1.is_left()):
             return self.h1
         return self.h2
+    
+    def get_cop(self):
+        return self.cop
+    
+    def get_ideal_cop(self):
+        return self.ideal_cop
+    
+    def get_correction_vector(self):
+        return self.correction_vector
+    
+    def get_actuators(self):
+        return self.actuators
 

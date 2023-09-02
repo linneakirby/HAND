@@ -7,36 +7,36 @@ np.set_printoptions(threshold=sys.maxsize)
 
 class Actuator:
     def __init__(self):
-        self.is_on = False
+        self.status = False
         self.magnitude = 0.0
 
     def __str__(self):
         s = ""
-        if not self.is_on:
+        if not self.status:
             s = s + "not "
         s = s + "on with a magnitude of " + str(self.magnitude)
         return s
 
     def turn_on(self, m=1.0):
-        self.is_on = True
+        self.status = True
         self.magnitude = m
 
     def turn_off(self):
-        self.is_on = False
+        self.status = False
         self.magnitude = 0.0
 
     def adjust_magnitude(self, m):
         self.magnitude = m
 
     def reset(self):
-        self.is_on = False
+        self.status = False
         self.magnitude = 0.0
 
     def get_magnitude(self):
         return self.magnitude
     
     def is_on(self):
-        return self.is_on
+        return self.status
     
 class Actuator_manager:
     def __init__(self):
@@ -85,3 +85,15 @@ class Actuator_manager:
         self.right.reset()
         self.wrist.reset()
         self.left.reset()
+
+    def get_index(self):
+        return self.index
+    
+    def get_right(self):
+        return self.right
+    
+    def get_wrist(self):
+        return self.wrist
+    
+    def get_left(self):
+        return self.left

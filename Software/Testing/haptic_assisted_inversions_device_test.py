@@ -43,14 +43,14 @@ class Haptic_Assisted_Inversions_Device_Test(unittest.TestCase):
 
     #make sure can create a 2d mat
     def test_create_mat_3x3(self):
-        hands_array = np.array([[1.0, 1.0, 1.0], [2.0, 2.0, 2.0], [3.0,3.0,3.0]])
+        hands_array = np.array([[1.0, 1.0, 1.0], [2.0, 2.0, 2.0], [3.0, 3.0, 3.0]])
         m = Mat(hands_array)
 
         self.assertIsInstance(m.Values, np.ndarray)
 
     #make sure can find 2 clusters with a simple 2d mat
     def test_kmeans(self):
-        hands_array = np.array([[0.0, 1.0, 0.0], [0.0, 0.0, 0.0], [0.0,2.0,0.0]])
+        hands_array = np.array([[0.0, 1.0, 0.0], [0.0, 0.0, 0.0], [0.0, 2.0, 0.0]])
         m = Mat(hands_array)
         h = Hands()
         h.run_kmeans(m.Values, 3, 3)
@@ -59,7 +59,7 @@ class Haptic_Assisted_Inversions_Device_Test(unittest.TestCase):
 
     #make sure can find and separate 2 UNORDERED hands with a simple 2d mat
     def test_isolate_hands_unordered(self):
-        hands_array = np.array([[0.0, 1.0, 0.0], [0.0, 0.0, 0.0], [0.0, 2.0,0.0]])
+        hands_array = np.array([[0.0, 1.0, 0.0], [0.0, 0.0, 0.0], [0.0, 2.0, 0.0]])
         m = Mat(hands_array)
 
         h = Hands()
@@ -68,13 +68,13 @@ class Haptic_Assisted_Inversions_Device_Test(unittest.TestCase):
 
         #merge hand dictionaries
         rl = dict()
-        rl.update(h.h1)
-        rl.update(h.h2)
+        rl.update(h.h1.get_points())
+        rl.update(h.h2.get_points())
     
         self.assertDictEqual(rl, {(2,1): 2.0, (0,1): 1.0})
 
     def test_isolate_hands_ordered(self):
-        hands_array = np.array([[0.0, 1.0, 0.0], [0.0, 0.0, 0.0], [0.0, 2.0,0.0]])
+        hands_array = np.array([[0.0, 1.0, 0.0], [0.0, 0.0, 0.0], [0.0, 2.0, 0.0]])
         m = Mat(hands_array)
 
         h = Hands()
@@ -82,18 +82,15 @@ class Haptic_Assisted_Inversions_Device_Test(unittest.TestCase):
         h.isolate_hands(m.Values)
         h.generate_cops()
 
-        # print("r: ", r)
-        # print("l: ", l)
-
         # for j in range(3-1, -1, -1):
         #     tmp = ""
         #     for i in range(3):
-        #         tmp = tmp +   hex(int(m[i][j]))[-1]
+        #         tmp = tmp +   hex(int(m.Values[i][j]))[-1]
         #     print(tmp)
         # print("\n")
 
-        self.assertEqual(h.right.get((2, 1)), 2.0)
-        self.assertEqual(h.left.get((0, 1)), 1.0)
+        self.assertEqual(h.get_right_hand().get_points().get((2, 1)), 2.0)
+        self.assertEqual(h.get_left_hand().get_points().get((0, 1)), 1.0)
 
     #make sure the basic cop calculation function works
     def test_calculate_cop(self):
@@ -110,7 +107,7 @@ class Haptic_Assisted_Inversions_Device_Test(unittest.TestCase):
 
     #make sure it's doing all the calculations properly on a simple mat example
     def test_cop_calculations(self):
-        hands_array = np.array([[0.0, 1.0, 0.0], [0.0, 0.0, 0.0], [0.0, 2.0,0.0]])
+        hands_array = np.array([[0.0, 1.0, 0.0], [0.0, 0.0, 0.0], [0.0, 2.0, 0.0]])
         m = Mat(hands_array)
 
         h = Hands()
@@ -118,15 +115,10 @@ class Haptic_Assisted_Inversions_Device_Test(unittest.TestCase):
         h.isolate_hands(m.Values)
         h.generate_cops()
 
-        hm = Hand_metadata(h)
-        hm.generate_cops()
-        hm.find_correction_vector()
-        hm.select_actuators()
-
-        self.assertEqual(h.rcop, [2.0, 1.0])
-        self.assertEqual(h.lcop, [0.0, 1.0])
-        self.assertEqual(hm.cop, [4.0/3.0, 1.0])
-        self.assertEqual(hm.ideal_cop, [1.0, 1.0])
+        self.assertEqual(h.get_right_hand().get_cop(), [2.0, 1.0])
+        self.assertEqual(h.get_left_hand().get_cop(), [0.0, 1.0])
+        self.assertEqual(h.get_cop(), [4.0/3.0, 1.0])
+        self.assertEqual(h.get_ideal_cop(), [1.0, 1.0])
 
     #make sure the basic vector calculation function works
     def test_create_vector(self):
@@ -156,11 +148,11 @@ class Haptic_Assisted_Inversions_Device_Test(unittest.TestCase):
         tv[0] = t2[0] - t1[0]
         tv[1] = t2[1] - t1[1]
 
-        self.assertEqual(h.correction_vector, (tv[0], tv[1]))
+        self.assertEqual(h.get_correction_vector(), (tv[0], tv[1]))
 
     #make sure the actuators are selected properly using a simple mat example
     def test_select_actuators(self):
-        hands_array = np.array([[0.0, 1.0, 0.0], [0.0, 0.0, 0.0], [0.0, 2.0,0.0]])
+        hands_array = np.array([[0.0, 1.0, 0.0], [0.0, 0.0, 0.0], [0.0, 2.0, 0.0]])
         m = Mat(hands_array)
 
         h = Hands()
@@ -170,10 +162,10 @@ class Haptic_Assisted_Inversions_Device_Test(unittest.TestCase):
         h.find_correction_vector()
         h.select_actuators()
 
-        self.assertFalse(h.actuators.index.is_on())
-        self.assertFalse(h.actuators.right.is_on())
-        self.assertTrue(h.actuators.wrist.is_on())
-        self.assertTrue(h.actuators.left.is_on())
+        self.assertTrue(h.get_actuators().get_index().is_on())
+        self.assertFalse(h.get_actuators().get_right().is_on())
+        self.assertFalse(h.get_actuators().get_wrist().is_on())
+        self.assertTrue(h.get_actuators().get_left().is_on())
 
     def test_scatter_plot_integrated(self):
         hands_array = np.load(os.getcwd() + "/hands.npy")
@@ -189,15 +181,15 @@ class Haptic_Assisted_Inversions_Device_Test(unittest.TestCase):
 
         figure, ax = plt.subplots(figsize=(5,5))
         plt.ion()
-        hand_utils.generate_scatter_plot(h.kmeans, h.coords_only, h.get_right_hand().get_cop(), h.get_left_hand().get_cop(), h.ideal_cop, h.cop, figure)
+        hand_utils.generate_scatter_plot(h.kmeans, h.coords_only, h.get_right_hand().get_cop(), h.get_left_hand().get_cop(), h.get_ideal_cop(), h.get_cop(), figure)
         plt.show()
 
         #print(actuators)
 
-        self.assertTrue(h.actuators.index.is_on())
-        self.assertTrue(h.actuators.right.is_on())
-        self.assertFalse(h.actuators.wrist.is_on())
-        self.assertFalse(h.actuators.left.is_on())
+        self.assertTrue(h.actuators.get_index().is_on())
+        self.assertFalse(h.actuators.get_right().is_on())
+        self.assertFalse(h.actuators.get_wrist().is_on())
+        self.assertTrue(h.actuators.get_left().is_on())
 
 
 if __name__ == '__main__':
