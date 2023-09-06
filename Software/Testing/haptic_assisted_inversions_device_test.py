@@ -208,7 +208,7 @@ class Haptic_Assisted_Inversions_Device_Mat_Test(unittest.TestCase):
     def test_server(self):
         response = self.client.get("/hand")
         assert response.status_code == 200
-        assert "Index 0.0\nRight 1.0\nWrist 1.0\nLeft 0.0" == response.get_data(as_text=True)
+        assert "i 0.0 r 1.0 w 1.0 l 0.0" == response.get_data(as_text=True)
 
 
 if __name__ == '__main__':

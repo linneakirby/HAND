@@ -44,10 +44,10 @@ class Actuator_manager:
         self.left = Actuator()
 
     def __str__(self):
-        s = "Index " + str(self.index) + "\n" #add index actuator
-        s = s + "Right " + str(self.right) + "\n" #add right actuator
-        s = s + "Wrist " + str(self.wrist) + "\n" #add wrist actuator
-        s = s + "Left " + str(self.left) #add left actuator
+        s = "i " + str(self.index) + " " #add index actuator
+        s = s + "r " + str(self.right) + " " #add right actuator
+        s = s + "w " + str(self.wrist) + " " #add wrist actuator
+        s = s + "l " + str(self.left) #add left actuator
         return s
     
     def activate_index(self):
