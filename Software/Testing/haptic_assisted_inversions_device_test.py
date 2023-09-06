@@ -1,10 +1,14 @@
 import sys
 sys.path.append("../")
 
+# For mat tests
 import unittest
 import numpy as np
 import os
 import matplotlib.pyplot as plt
+
+# For server tests
+from flask import Flask
 
 # My libraries
 from Mat import Mat
@@ -12,7 +16,7 @@ from Hands import *
 import hand_utils
 import haptic_assisted_inversions_device as hand
 
-class Haptic_Assisted_Inversions_Device_Test(unittest.TestCase):
+class Haptic_Assisted_Inversions_Device_Mat_Test(unittest.TestCase):
 
     #make sure mat data can be accessed
     def test_load_mat_data(self):
@@ -190,6 +194,12 @@ class Haptic_Assisted_Inversions_Device_Test(unittest.TestCase):
         self.assertFalse(h.actuators.get_right().is_on())
         self.assertFalse(h.actuators.get_wrist().is_on())
         self.assertTrue(h.actuators.get_left().is_on())
+
+class Haptic_Assisted_Inversions_Device_Server_Test(flask_unittest.AppClientTestCase):
+
+    def setUp(self, app):
+        app = Flask()
+        return app
 
 
 if __name__ == '__main__':

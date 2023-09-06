@@ -1,18 +1,22 @@
 from flask import Flask
 
-app = Flask(__name__)
+def create_app():
+    app = Flask(__name__)
 
-@app.route('/helloarduino')
-def helloHandler():
-    return create_actuator_dict()
+    @app.route('/helloarduino')
+    def helloHandler():
+        return create_actuator_dict()
+    
+    return app
 
 def create_actuator_dict():
     actuators = list()
     actuators.append((True, .8)) #index
-    actuators.append((True, .4)) #pinky
+    actuators.append((True, .4)) #left
     actuators.append((False, 0.0)) #wrist
-    actuators.append((False, 0.0)) #thumb
-    return actuators
+    actuators.append((False, 0.0)) #right
+    return "hello"
 
-
-app.run(host='0.0.0.0', port=8090)
+if __name__ == '__main__':
+    app = create_app()
+    app.run(host='0.0.0.0', port=8090)

@@ -18,11 +18,15 @@ ROW_SIZE = 48  # Rows of the sensor
 COL_SIZE = 48  # Columns of the sensor
 DEFAULT_PORT = '/dev/cu.usbmodem104742601'
 
-app = Flask(__name__)
-mat = Mat(hand_utils.get_port())
+def create_app():
+    app = Flask(__name__)
+    mat = Mat(hand_utils.get_port())
 
-@app.route('/hand')
-def sendDataToArduino():
+    @app.route('/hand')
+    def hand():
+        return app, mat
+
+def sendDataToArduino(mat: Mat):
     mat.get_matrix()
     a = process_mat_data(mat.Values)
     return a
@@ -37,5 +41,6 @@ def process_mat_data(d):
     return h.get_actuators()
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=8090)
+    app, mat = create_app()
+    app.run(host='0.0.0.0', port=8090, mat=mat)
     # time.sleep(0.1) # not sure if server should sleep or if it should all be on the gloves' end

@@ -14,6 +14,8 @@ Firmware for the gloves can be found in the "Software/Arduino" folder. In Arduin
 The mat software is written in Python3 and can be found in the "Software" folder. 
 
 ### Dependencies
+
+#### The HAND Library
 - sys
 - time
 - matplotlib.pyplot
@@ -21,6 +23,10 @@ The mat software is written in Python3 and can be found in the "Software" folder
 - sklearn.cluster
 - flask
 - serial.tools.list_ports
+
+#### Testing
+- os
+- unittest
 
 ### The HAND Library
 The software is broken down into several files to create a HAND library.
