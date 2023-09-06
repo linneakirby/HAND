@@ -77,6 +77,7 @@ class Haptic_Assisted_Inversions_Device_Mat_Test(unittest.TestCase):
     
         self.assertDictEqual(rl, {(2,1): 2.0, (0,1): 1.0})
 
+    #make sure can separate and correctly label the hands
     def test_isolate_hands_ordered(self):
         hands_array = np.array([[0.0, 1.0, 0.0], [0.0, 0.0, 0.0], [0.0, 2.0, 0.0]])
         m = Mat(hands_array)
@@ -171,6 +172,7 @@ class Haptic_Assisted_Inversions_Device_Mat_Test(unittest.TestCase):
         self.assertFalse(h.get_actuators().get_wrist().is_on())
         self.assertTrue(h.get_actuators().get_left().is_on())
 
+    #make sure an entire loop runs properly
     def test_scatter_plot_integrated(self):
         hands_array = np.load(os.getcwd() + "/hands.npy")
         m = Mat(hands_array)
@@ -195,11 +197,18 @@ class Haptic_Assisted_Inversions_Device_Mat_Test(unittest.TestCase):
         self.assertFalse(h.actuators.get_wrist().is_on())
         self.assertTrue(h.actuators.get_left().is_on())
 
-class Haptic_Assisted_Inversions_Device_Server_Test(flask_unittest.AppClientTestCase):
+    ### SERVER TESTS BELOW ###
+    hands_array = np.load(os.getcwd() + "/hands.npy")
+    app = hand.create_app(hands_array)
 
-    def setUp(self, app):
-        app = Flask()
-        return app
+    #create test client
+    def setUp(self):
+        self.client = self.app.test_client()
+
+    def test_server(self):
+        response = self.client.get("/hand")
+        assert response.status_code == 200
+        assert "Index 0.0\nRight 1.0\nWrist 1.0\nLeft 0.0" == response.get_data(as_text=True)
 
 
 if __name__ == '__main__':

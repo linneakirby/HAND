@@ -18,17 +18,26 @@ ROW_SIZE = 48  # Rows of the sensor
 COL_SIZE = 48  # Columns of the sensor
 DEFAULT_PORT = '/dev/cu.usbmodem104742601'
 
-def create_app():
+def create_app(data = None):
     app = Flask(__name__)
-    mat = Mat(hand_utils.get_port())
+    if data is None: #if no mat values provided
+        data = Mat(hand_utils.get_port())
 
     @app.route('/hand')
     def hand():
-        return app, mat
+        return sendDataToArduino(data)
+        
+    return app
 
-def sendDataToArduino(mat: Mat):
-    mat.get_matrix()
-    a = process_mat_data(mat.Values)
+def sendDataToArduino(data):
+    #if data is just mat values snapshot
+    # used for testing without Mat object
+    if isinstance(data, np.ndarray):
+        a = process_mat_data(data)
+    #if data is a Mat object -> used for normal HAND behavior
+    if isinstance(data, Mat):
+        data.get_matrix()
+        a = process_mat_data(data.Values)
     return a
 
 def process_mat_data(d):
@@ -38,7 +47,7 @@ def process_mat_data(d):
     h.generate_cops()
     h.find_correction_vector()
     h.select_actuators()
-    return h.get_actuators()
+    return str(h.get_actuators())
 
 if __name__ == '__main__':
     app, mat = create_app()

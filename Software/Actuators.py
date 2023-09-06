@@ -12,9 +12,7 @@ class Actuator:
 
     def __str__(self):
         s = ""
-        if not self.status:
-            s = s + "not "
-        s = s + "on with a magnitude of " + str(self.magnitude)
+        s = s + str(self.magnitude)
         return s
 
     def turn_on(self, m=1.0):
