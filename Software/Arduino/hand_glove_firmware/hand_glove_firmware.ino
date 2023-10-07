@@ -3,19 +3,23 @@
   Linnea Kirby
 */
 
-
 #include <Arduino.h>
-
 #include <ESP8266WiFi.h>
 #include <ESP8266WiFiMulti.h>
-
 #include <ESP8266HTTPClient.h>
-
 #include <WiFiClient.h>
 
 ESP8266WiFiMulti WiFiMulti;
 
-int *values = new int[4];
+// if using home network
+const String NETWORK = "THE DANGER ZONE";
+const String PASSWORD = "all hailqueen nyxie";
+
+// if using local network
+//const String NETWORK = "ALTIMA_MESH-F19FC8";
+//const String PASSWORD = "92f19fc8";
+
+int *values = new int[8]; //4 char-int pairs
 
 void setup() {
   // Initialize the LED_BUILTIN pins as an output
@@ -35,8 +39,7 @@ void setup() {
     delay(1000);
   }
   WiFi.mode(WIFI_STA);
-  //WiFiMulti.addAP("ALTIMA_MESH-F19FC8", "92f19fc8");
-  WiFiMulti.addAP("THE DANGER ZONE", "allhailqueennyxie");
+  WiFiMulti.addAP(NETWORK, PASSWORD);
 }
 
 // the loop function runs over and over again forever
@@ -53,27 +56,30 @@ void loop() {
   values = splitInstructions(getInstructions(), values);
 
   for (int i=0; i<sizeof(values)-1; i+=2){
-    activateActuator(values[i]);
+    activateActuator(values[i], HIGH);
+    //activateActuator(values[i], values[i+1]); //TODO: uncomment this out to add intensities
   }
 
 }
 
-void activateActuator(int value){
-  int v = convertSymbolToPin(char(value));
-  digitalWrite(v, HIGH);
+//TODO: add intensities
+void activateActuator(int actuator, int intensity=HIGH){
+  int a = convertSymbolToPin(char(actuator));
+  digitalWrite(a, intensity);
 }
 
+// let's keep things human-readable!
 int convertSymbolToPin(char symbol){
-  if (symbol == 'i'){ //38
+  if (symbol == 'i'){ //105
     return 5;
   }
-  if (symbol == 'r'){ //53
+  if (symbol == 'r'){ //114
     return 4;
   }
-  if (symbol == 'l'){ //47
+  if (symbol == 'l'){ //108
     return 14;
   }
-  if (symbol == 'w'){ //58
+  if (symbol == 'w'){ //119
     return 12;
   }
   return 0; //invalid symbol
@@ -101,9 +107,8 @@ void getWifiConnection(){
 
         // file found at server
         if (httpCode == HTTP_CODE_OK || httpCode == HTTP_CODE_MOVED_PERMANENTLY) {
-          String payload = http.getString();
-          Serial.println("Payload: "+ payload);
-          // ACTIVATE ACTUATORS HERE
+          Serial.printf("Connection successful!")
+          return; // successful!
         }
       } else {
         Serial.printf("[HTTP] GET... failed, error: %s\n", http.errorToString(httpCode).c_str());
@@ -117,7 +122,9 @@ void getWifiConnection(){
 }
 
 String getInstructions(){
-  return "";
+  String payload = http.getString(); //INSTRUCTIONS
+  Serial.println("Payload: "+ payload);
+  return payload;
 }
 
 // reset all acctuators
@@ -133,7 +140,7 @@ void turnActuatorOn(int actuator){
   digitalWrite(actuator, HIGH);
 }
 
-int *splitInstructions(String instructions, int values[4]){
+int *splitInstructions(String instructions, int values[8]){
   String str = instructions;
   int index = 0;
   // Split the string into substrings
