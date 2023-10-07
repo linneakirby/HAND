@@ -3,7 +3,7 @@ from flask import Flask
 def create_app():
     app = Flask(__name__)
 
-    @app.route('/helloarduino')
+    @app.route('/hand')
     def helloHandler():
         return create_actuator_dict()
     

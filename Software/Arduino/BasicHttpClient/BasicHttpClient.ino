@@ -32,7 +32,7 @@ void setup() {
   }
 
   WiFi.mode(WIFI_STA);
-  WiFiMulti.addAP("THE DANGER ZONE", "allhailqueennyxie");
+  WiFiMulti.addAP("ALTIMA_MESH-F19FC8", "92f19fc8");
 
 }
 
@@ -45,7 +45,7 @@ void loop() {
     HTTPClient http;
 
     Serial.print("[HTTP] begin...\n");
-    if (http.begin(client, "http://192.168.0.13:8090/hand")) {  // HTTP
+    if (http.begin(client, "http://192.168.11.2:8090/hand")) {  // HTTP
 
 
       Serial.print("[HTTP] GET...\n");
