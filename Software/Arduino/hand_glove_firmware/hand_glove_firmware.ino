@@ -8,18 +8,20 @@
 #include <ESP8266WiFiMulti.h>
 #include <ESP8266HTTPClient.h>
 #include <WiFiClient.h>
+#include <tuple>
 
 ESP8266WiFiMulti WiFiMulti;
 
 // if using home network
-const String NETWORK = "THE DANGER ZONE";
-const String PASSWORD = "all hailqueen nyxie";
+const char* NETWORK = "THE DANGER ZONE";
+const char* PASSWORD = "allhailqueennyxie";
 
 // if using local network
 //const String NETWORK = "ALTIMA_MESH-F19FC8";
 //const String PASSWORD = "92f19fc8";
 
-int *values = new int[8]; //4 char-int pairs
+int *values = new int[4]; //4 ints representing actuators in the order {INDEX, RIGHT, LEFT, WRIST}
+HTTPClient http;
 
 void setup() {
   // Initialize the LED_BUILTIN pins as an output
@@ -40,26 +42,6 @@ void setup() {
   }
   WiFi.mode(WIFI_STA);
   WiFiMulti.addAP(NETWORK, PASSWORD);
-}
-
-// the loop function runs over and over again forever
-void loop() {
-  // wait for WiFi connection
-  getWifiConnection();
-
-  delay(10000);
-
-  // reset actuators
-  turnActuatorsOff();
-
-  // find actuators to activate
-  values = splitInstructions(getInstructions(), values);
-
-  for (int i=0; i<sizeof(values)-1; i+=2){
-    activateActuator(values[i], HIGH);
-    //activateActuator(values[i], values[i+1]); //TODO: uncomment this out to add intensities
-  }
-
 }
 
 //TODO: add intensities
@@ -90,8 +72,6 @@ void getWifiConnection(){
 
     WiFiClient client;
 
-    HTTPClient http;
-
     Serial.print("[HTTP] begin...\n");
     if (http.begin(client, "http://192.168.11.2:8090/hand")) {  // HTTP
 
@@ -107,7 +87,7 @@ void getWifiConnection(){
 
         // file found at server
         if (httpCode == HTTP_CODE_OK || httpCode == HTTP_CODE_MOVED_PERMANENTLY) {
-          Serial.printf("Connection successful!")
+          Serial.printf("Connection successful!");
           return; // successful!
         }
       } else {
@@ -121,6 +101,7 @@ void getWifiConnection(){
   }
 }
 
+// get actuator activation instructions from Flask server
 String getInstructions(){
   String payload = http.getString(); //INSTRUCTIONS
   Serial.println("Payload: "+ payload);
@@ -140,23 +121,75 @@ void turnActuatorOn(int actuator){
   digitalWrite(actuator, HIGH);
 }
 
-int *splitInstructions(String instructions, int values[8]){
+int findNextTwoSpaces(String target){
+  String t = target.substring(findNextSpace(target));
+  return findNextSpace(t);
+}
+
+int findNextSpace(String s){
+  int index = s.indexOf(' ');
+  if (index == -1){ // no spaces!
+    return 0;
+  }
+  return index;
+}
+
+//parse the first boolean from a String of unknown length
+bool getBool(String target){
+  int index = findNextSpace(target);
+  if (index == 0){ // must only be a boolean
+    return (bool)target;
+  }
+  else{ //otherwise you've found the end of the bool
+    return (bool)target.substring(0, index);
+  }
+}
+
+//parse the first int from a String of unknown length
+int getInt(String target){
+  int index = findNextSpace(target);
+  if (index == 0){ // must only be an int
+    return target.toInt();
+  }
+  else{ //otherwise you've found the end of the int
+    return target.substring(0, index).toInt();
+  }
+}
+
+// split instructions from payload into 4 ints (representing intensity for each actuator)
+int *splitInstructions(String instructions, int values[4]){
   String str = instructions;
-  int index = 0;
+  int valuesIndex = 0;
+  int v;
+  
   // Split the string into substrings
-  while (str.length() > 0)
+  while (findNextSpace(str) > 0) //while there is more to parse
   {
-    int index = str.indexOf(' ');
-    if (index == -1) // No space found
-    {
-      instructions.setCharAt(index++, str);
-      break;
-    }
-    else
-    {
-      instructions.setCharAt(index++, str.substring(0, index);
-      str = str.substring(index+1);
-    }
+    v = getInt(str);
+    values[valuesIndex] = v;
+    valuesIndex += 1;
+    str = str.substring(findNextSpace(str)); //remove the int just found
+    
   }
   return values;
+}
+
+// the loop function runs over and over again forever
+void loop() {
+  // wait for WiFi connection
+  getWifiConnection();
+
+  delay(10000);
+
+  // reset actuators
+  turnActuatorsOff();
+
+  // find actuators to activate
+  values = splitInstructions(getInstructions(), values);
+
+  for (int i=0; i<sizeof(values)-1; i+=2){
+    activateActuator(values[i], HIGH);
+    //activateActuator(values[i], values[i+1]); //TODO: uncomment this out to add intensities
+  }
+
 }

@@ -11,10 +11,10 @@ def create_app():
 
 def create_actuator_dict():
     actuators = list()
-    actuators.append((True, .8)) #index
-    actuators.append((True, .4)) #left
-    actuators.append((False, 0.0)) #wrist
-    actuators.append((False, 0.0)) #right
+    actuators.append(0.8) #index
+    actuators.append(0.4) #left
+    actuators.append(0.0) #wrist
+    actuators.append(0.0) #right
     return "hello"
 
 if __name__ == '__main__':
