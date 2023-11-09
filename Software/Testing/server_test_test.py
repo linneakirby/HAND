@@ -9,7 +9,7 @@ class Server_Test_Test(unittest.TestCase):
         self.client = self.app.test_client()
 
     def test_home(self):
-        response = self.client.get("/helloarduino")
+        response = self.client.get("/hand")
         assert response.status_code == 200
         assert "hello" == response.get_data(as_text=True)
 

@@ -5,9 +5,15 @@ def create_app():
 
     @app.route('/hand')
     def helloHandler():
-        return create_actuator_dict()
+        return dict_to_string(create_actuator_dict())
     
     return app
+
+def dict_to_string(d):
+    s = ""
+    for item in d:
+        s = s + str(item) + " "
+    return s
 
 def create_actuator_dict():
     actuators = list()
@@ -15,7 +21,7 @@ def create_actuator_dict():
     actuators.append(0.4) #left
     actuators.append(0.0) #wrist
     actuators.append(0.0) #right
-    return "hello"
+    return actuators
 
 if __name__ == '__main__':
     app = create_app()
