@@ -138,14 +138,76 @@ int convertSymbolToPin(char symbol){
   return 0; //invalid symbol
 }
 
+//pulse target actuator on and off
+void pulseActuator(int actuator){
+  digitalWrite(actuator, HIGH);
+  delay(100);
+  digitalWrite(actuator, LOW);
+  delay(200);
+}
+
+//pulse an actuator according to intensity
 void activateActuator(int actuator, float intensity=HIGH){
-  Serial.println("activating pin " + String(actuator));
-  if(intensity > 0){
-    digitalWrite(actuator, HIGH);
-    Serial.println("at high intensity");
+  //Serial.println("activating pin " + String(actuator));
+  if(intensity > 0.66){ //highest intensity
+    pulseActuator(actuator);
+    pulseActuator(actuator);
+    pulseActuator(actuator);
+  }
+  else if(intensity > 0.33){ //mid intensity
+    pulseActuator(actuator);
+    pulseActuator(actuator);
+  }
+  else{ //low intensity
+    pulseActuator(actuator);
+  }
+}
+
+//activate desired actuators in series
+void activateActuators(float *v){
+  if (values[0] > 0){
+    if (values[1] > 0){ // index/left pair
+      if(values[0] > values[1]){ //more index
+        activateActuator(convertSymbolToPin('i'), values[0]);
+        activateActuator(convertSymbolToPin('l'), values[1]);
+      }
+      else{ //more left
+        activateActuator(convertSymbolToPin('l'), values[1]);
+        activateActuator(convertSymbolToPin('i'), values[0]);
+      }
+    }
+    else{ //index/right pair
+      if(values[0] > values[3]){ //more index
+        activateActuator(convertSymbolToPin('i'), values[0]);
+        activateActuator(convertSymbolToPin('r'), values[3]);
+      }
+      else{ //more right
+        activateActuator(convertSymbolToPin('r'), values[3]);
+        activateActuator(convertSymbolToPin('i'), values[0]);
+      }
+    }
   }
   else{
-    Serial.println("at low intensity");
+    if(values[1] > 0){ //wrist/left pair
+      if(values[2] > values[1]){ //more wrist
+        activateActuator(convertSymbolToPin('w'), values[2]);
+        activateActuator(convertSymbolToPin('l'), values[1]);
+      }
+      else{ //more left
+        activateActuator(convertSymbolToPin('l'), values[1]);
+        activateActuator(convertSymbolToPin('w'), values[2]);
+      }
+    }
+    else{ //wrist/right pair
+      if(values[2] > values[3]){ //more wrist
+        activateActuator(convertSymbolToPin('w'), values[2]);
+        activateActuator(convertSymbolToPin('r'), values[3]);
+      }
+      else{ //more right
+        activateActuator(convertSymbolToPin('r'), values[3]);
+        activateActuator(convertSymbolToPin('w'), values[2]);
+      }
+    }
   }
 }
 
@@ -154,22 +216,14 @@ void loop() {
   // wait for WiFi connection
   getWifiConnection();
 
-  delay(5000);
+  delay(3000);
 
   // reset actuators
   turnActuatorsOff();
 
   // find actuators to activate
   values = splitInstructions(getInstructions(), values);
-//  Serial.println(String(values[0]));
-//  Serial.println(String(values[1]));
-//  Serial.println(String(values[2]));
-//  Serial.println(String(values[3]));
 
   //order is always {INDEX, LEFT, WRIST, RIGHT}
-  activateActuator(convertSymbolToPin('i'), values[0]);
-  activateActuator(convertSymbolToPin('l'), values[1]);
-  activateActuator(convertSymbolToPin('w'), values[2]);
-  activateActuator(convertSymbolToPin('r'), values[3]);
-
+  activateActuators(values);
 }
