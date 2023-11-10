@@ -25,6 +25,7 @@ const char* HTTP = "http://192.168.0.15:8090/hand";
 
 float *values = new float[4]; //4 ints representing actuators in the order {INDEX, LEFT, WRIST, RIGHT}
 HTTPClient http;
+int httpCode;
 
 void setup() {
   // Initialize the LED_BUILTIN pins as an output
@@ -55,25 +56,25 @@ void getWifiConnection(){
     Serial.print("[HTTP] begin...\n");
     if (http.begin(client, HTTP)) {  // HTTP
 
-
-      Serial.print("[HTTP] GET...\n");
-      // start connection and send HTTP header
-      int httpCode = http.GET();
-
-      // httpCode will be negative on error
-      if (httpCode > 0) {
-        // HTTP header has been send and Server response header has been handled
-        Serial.printf("[HTTP] GET... code: %d\n", httpCode);
-
-        // file found at server
-        if (httpCode == HTTP_CODE_OK || httpCode == HTTP_CODE_MOVED_PERMANENTLY) {
-          Serial.printf("Connection successful!");
-          return; // successful!
+      for (size_t i = 0; i < 3; i++) {
+        Serial.printf("[HTTP] GET (%d)...\n", i+1);
+        // start connection and send HTTP header
+        httpCode = http.GET();
+  
+        // httpCode will be negative on error
+        if (httpCode > 0) {
+          // HTTP header has been send and Server response header has been handled
+          Serial.printf("[HTTP] GET... code: %d\n", httpCode);
+  
+          // file found at server
+          if (httpCode == HTTP_CODE_OK || httpCode == HTTP_CODE_MOVED_PERMANENTLY) {
+            Serial.printf("Connection successful!");
+            return; // successful!
+          }
+        } else {
+          Serial.printf("[HTTP] GET... failed, error: %s\n", http.errorToString(httpCode).c_str());
         }
-      } else {
-        Serial.printf("[HTTP] GET... failed, error: %s\n", http.errorToString(httpCode).c_str());
       }
-
       http.end();
     } else {
       Serial.printf("[HTTP} Unable to connect\n");
@@ -222,8 +223,10 @@ void loop() {
   turnActuatorsOff();
 
   // find actuators to activate
-  values = splitInstructions(getInstructions(), values);
-
-  //order is always {INDEX, LEFT, WRIST, RIGHT}
-  activateActuators(values);
+  if (httpCode == HTTP_CODE_OK) {
+    values = splitInstructions(getInstructions(), values);
+  
+    //order is always {INDEX, LEFT, WRIST, RIGHT}
+    activateActuators(values);
+  }
 }
