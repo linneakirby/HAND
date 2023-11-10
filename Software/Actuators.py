@@ -39,15 +39,15 @@ class Actuator:
 class Actuator_manager:
     def __init__(self):
         self.index = Actuator()
-        self.right = Actuator()
-        self.wrist = Actuator()
         self.left = Actuator()
+        self.wrist = Actuator()
+        self.right = Actuator()
 
     def __str__(self):
         s = str(self.index) + " " #add index actuator
-        s = s + str(self.right) + " " #add right actuator
+        s = s + str(self.left) + " " #add left actuator
         s = s + str(self.wrist) + " " #add wrist actuator
-        s = s + str(self.left) #add left actuator
+        s = s + str(self.right) + " " #add right actuator
         return s
     
     def activate_index(self):
@@ -80,9 +80,9 @@ class Actuator_manager:
 
     def reset(self):
         self.index.reset()
-        self.right.reset()
-        self.wrist.reset()
         self.left.reset()
+        self.wrist.reset()
+        self.right.reset()
 
     def get_index(self):
         return self.index
