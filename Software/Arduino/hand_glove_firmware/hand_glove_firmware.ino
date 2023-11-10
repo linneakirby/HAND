@@ -101,29 +101,6 @@ void turnActuatorOn(int actuator){
   digitalWrite(actuator, HIGH);
 }
 
-int findNextSpace(String s){
-  int index = s.indexOf(' ');
-  //Serial.println("Looking at: " + s);
-  if (index == -1){ // no spaces!
-    return 0;
-  }
-  Serial.println("Returning: " + String(index));
-  return index;
-}
-
-//parse the first int from a String of unknown length
-float getFloat(String target){
-  int index = findNextSpace(target);
-  if (index == 0){ // must only be an int
-    //Serial.println("Adding to values: " + target);
-    return target.toFloat();
-  }
-  else{ //otherwise you've found the end of the int
-    //Serial.println("Adding to values: " + target.substring(0, index));
-    return target.substring(0, index).toFloat();
-  }
-}
-
 // split instructions from payload into 4 floats (representing intensity for each actuator)
 float *splitInstructions(String instructions, float values[4]){
   int r=0;
@@ -145,6 +122,7 @@ float *splitInstructions(String instructions, float values[4]){
 
 // let's keep things human-readable!
 int convertSymbolToPin(char symbol){
+  Serial.println("symbol is: " + symbol);
   if (symbol == 'i'){ //105
     return 5;
   }
@@ -161,9 +139,13 @@ int convertSymbolToPin(char symbol){
 }
 
 void activateActuator(int actuator, float intensity=HIGH){
-  int a = convertSymbolToPin(char(actuator));
+  Serial.println("activating pin " + String(actuator));
   if(intensity > 0){
-    digitalWrite(a, HIGH);
+    digitalWrite(actuator, HIGH);
+    Serial.println("at high intensity");
+  }
+  else{
+    Serial.println("at low intensity");
   }
 }
 
@@ -179,10 +161,10 @@ void loop() {
 
   // find actuators to activate
   values = splitInstructions(getInstructions(), values);
-  Serial.println(String(values[0]));
-  Serial.println(String(values[1]));
-  Serial.println(String(values[2]));
-  Serial.println(String(values[3]));
+//  Serial.println(String(values[0]));
+//  Serial.println(String(values[1]));
+//  Serial.println(String(values[2]));
+//  Serial.println(String(values[3]));
 
   //order is always {INDEX, LEFT, WRIST, RIGHT}
   activateActuator(convertSymbolToPin('i'), values[0]);
