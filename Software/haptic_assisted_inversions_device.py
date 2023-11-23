@@ -37,19 +37,24 @@ def sendDataToArduino(data):
     #if data is a Mat object -> used for normal HAND behavior
     if isinstance(data, Mat):
         data.get_matrix()
+        print(data)
         a = process_mat_data(data.Values)
     return a
 
 def process_mat_data(d):
     h = Hands()
-    h.run_kmeans(d)
-    h.isolate_hands(d)
-    h.generate_cops()
-    h.find_correction_vector()
-    h.select_actuators()
-    return str(h.get_actuators())
+    if np.any(d):
+        h.run_kmeans(d)
+        h.isolate_hands(d)
+        h.generate_cops()
+        h.find_correction_vector()
+        print(f"CoP: {h.cop} - ideal {h.ideal_cop}")
+        h.select_actuators()
+    values = str(h.get_actuators())
+    print(f"Actuator: {values}")
+    return values
 
 if __name__ == '__main__':
-    app, mat = create_app()
-    app.run(host='0.0.0.0', port=8090, mat=mat)
+    app = create_app()
+    app.run(host='0.0.0.0', port=8090)
     # time.sleep(0.1) # not sure if server should sleep or if it should all be on the gloves' end

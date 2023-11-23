@@ -26,7 +26,7 @@ class Mat:
 
     def request_pressure_map(self):
         data = "R"
-        self.ser.write(data.encode())
+        print(f"N bytes written: {self.ser.write(data.encode())}")
 
     def active_points_receive_map(self):
         matrix = np.zeros((ROW_SIZE, COL_SIZE), dtype=int)
@@ -82,6 +82,6 @@ class Mat:
             for i in range(ROW_SIZE):
                 tmp = tmp +   hex(int(self.Values[i][j]))[-1]
             s = s+tmp
-        s = s+"\n"
+            s = s+"\n"
 
         return s

@@ -12,16 +12,16 @@
 
 ESP8266WiFiMulti WiFiMulti;
 
-// if using home network
-const char* NETWORK = "THE DANGER ZONE";
-const char* PASSWORD = "allhailqueennyxie";
-const char* HTTP = "http://192.168.0.15:8090/hand";
+//// if using home network
+//const char* NETWORK = "THE DANGER ZONE";
+//const char* PASSWORD = "allhailqueennyxie";
+//const char* HTTP = "http://192.168.0.15:8090/hand";
 
 
-// if using local network
-//const char* NETWORK = "ALTIMA_MESH-F19FC8";
-//const char* PASSWORD = "92f19fc8";
-//const char* HTTP = "http://192.168.11.3:8090/hand";
+//if using local network
+const char* NETWORK = "ALTIMA_MESH-F19FC8";
+const char* PASSWORD = "92f19fc8";
+const char* HTTP = "http://192.168.11.2:8090/hand";
 
 float *values = new float[4]; //4 ints representing actuators in the order {INDEX, LEFT, WRIST, RIGHT}
 HTTPClient http;
@@ -217,7 +217,7 @@ void loop() {
   // wait for WiFi connection
   getWifiConnection();
 
-  delay(3000);
+  delay(1000);
 
   // reset actuators
   turnActuatorsOff();
