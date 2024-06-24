@@ -17,7 +17,9 @@ def get_port():
     # You may need to change it for other operating systems.
     print("Getting ports")
     ports = list(serial.tools.list_ports.grep("\/dev\/cu.usbmodem[0-9]{9}"))
-    return ports[0].device
+    if (ports):
+        return ports[0].device
+    return None
 
 def ndarray_to_2darray(nda, preserve_values=True, r=ROW_SIZE, c=COL_SIZE):
     two_d_array = np.zeros((r, c))

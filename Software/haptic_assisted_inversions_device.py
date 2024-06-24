@@ -27,7 +27,7 @@ def create_app(data = None):
     def hand():
         return sendDataToArduino(data)
         
-    return app
+    return app, data
 
 def sendDataToArduino(data):
     #if data is just mat values snapshot
@@ -49,12 +49,12 @@ def process_mat_data(d):
         h.generate_cops()
         h.find_correction_vector()
         print(f"CoP: {h.cop} - ideal {h.ideal_cop}")
-        h.select_actuators()
+        h.select_2_actuators()
     values = str(h.get_actuators())
     print(f"Actuator: {values}")
     return values
 
 if __name__ == '__main__':
-    app = create_app()
+    app, data = create_app()
     app.run(host='0.0.0.0', port=8090)
     # time.sleep(0.1) # not sure if server should sleep or if it should all be on the gloves' end

@@ -217,7 +217,7 @@ void loop() {
   // wait for WiFi connection
   getWifiConnection();
 
-  delay(1000);
+  delay(250);
 
   // reset actuators
   turnActuatorsOff();

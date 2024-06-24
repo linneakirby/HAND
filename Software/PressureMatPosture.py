@@ -21,11 +21,15 @@ if CONTOUR:
 
 class Mat:
     def __init__(self, port):
-        self.ser = serial.Serial(
-            port,
-            baudrate=115200,
-            timeout=0.1)
-        self.Values = np.zeros((ROWS, COLS))
+        #for testing purposes, use snapshot frame when no active port
+        if(isinstance(port, np.ndarray)):
+            self.Values = port
+        else:
+            self.ser = serial.Serial(
+                port,
+                baudrate=115200,
+                timeout=0.1)
+            self.Values = np.zeros((ROWS, COLS))
 
     def RequestPressureMap(self):
         data = "R"
@@ -99,7 +103,9 @@ def getPort():
     # You may need to change it for other operating systems.
     print("Getting ports")
     ports = list(serial.tools.list_ports.grep("\/dev\/(cu|tty).usbmodem[0-9]{9}"))
-    return ports[0].device
+    if(ports != []):
+        return ports[0].device
+    return np.load("./Testing/hands.npy")
 
 
 def generatePlot(Z):
@@ -195,13 +201,18 @@ def getBlobs2():
         cv2.waitKey(0)
 
 def main():
-    mat = Mat(getPort())
-    while True:
-        mat.getMatrix()
-        mat.printMatrix()
-        if CONTOUR:
-            mat.plotMatrix()
-        time.sleep(0.1)
+    data = getPort()
+    mat = Mat(data)
+    if not(isinstance(data, np.ndarray)): 
+        while True:
+            mat.getMatrix()
+            mat.printMatrix()
+            if CONTOUR:
+                mat.plotMatrix()
+            time.sleep(0.1)
+
+    mat.printMatrix()
+    mat.plotMatrix()
 
 if __name__ == '__main__':
     print("main")

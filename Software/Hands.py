@@ -135,13 +135,32 @@ class Hands:
         self.correction_vector = hand_utils.create_vector(self.cop, self.ideal_cop)
         return self.correction_vector
     
+    # each hand represents L or R
+    # within hand only I and W actuators
+    # less granular than using 4
+    def select_2_actuators(self):
+        #x value
+        if(self.correction_vector[0] >= 0): 
+            self.actuators.activate_right()
+        else:
+            self.actuators.activate_left()
+
+        #y value
+        if(self.correction_vector[1] >= 0):
+            self.actuators.activate_index()
+        else:
+            self.actuators.activate_wrist()
+
+        return self.actuators
+
     # quadrant vector lands in determines which actuators to activate
     #      I
     #      |  
     # L ---•--- R
     #      |  
     #      W
-    def select_actuators(self):
+    # TODO: needs to be more granular to compare within hands COPs
+    def select_4_actuators(self):
         #x value
         if(self.correction_vector[0] >= 0): 
             self.actuators.activate_right()
