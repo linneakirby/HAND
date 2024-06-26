@@ -167,10 +167,10 @@ class Haptic_Assisted_Inversions_Device_Mat_Test(unittest.TestCase):
         h.find_correction_vector()
         h.select_actuators()
 
-        self.assertTrue(h.get_actuators().get_index().is_on())
-        self.assertFalse(h.get_actuators().get_right().is_on())
-        self.assertFalse(h.get_actuators().get_wrist().is_on())
-        self.assertTrue(h.get_actuators().get_left().is_on())
+        self.assertTrue(h.get_actuators().get_r_index().is_on())
+        self.assertFalse(h.get_actuators().get_r_right().is_on())
+        self.assertFalse(h.get_actuators().get_r_wrist().is_on())
+        self.assertTrue(h.get_actuators().get_r_left().is_on())
 
     #make sure an entire loop runs properly
     def test_scatter_plot_integrated(self):
@@ -192,14 +192,14 @@ class Haptic_Assisted_Inversions_Device_Mat_Test(unittest.TestCase):
 
         #print(actuators)
 
-        self.assertTrue(h.actuators.get_index().is_on())
-        self.assertFalse(h.actuators.get_right().is_on())
-        self.assertFalse(h.actuators.get_wrist().is_on())
-        self.assertTrue(h.actuators.get_left().is_on())
+        self.assertTrue(h.actuators.get_r_index().is_on())
+        self.assertFalse(h.actuators.get_r_right().is_on())
+        self.assertFalse(h.actuators.get_r_wrist().is_on())
+        self.assertTrue(h.actuators.get_r_left().is_on())
 
     ### SERVER TESTS BELOW ###
     hands_array = np.load(os.getcwd() + "/hands.npy")
-    app = hand.create_app(hands_array)
+    app, data = hand.create_app(hands_array)
 
     #create test client
     def setUp(self):
@@ -208,7 +208,7 @@ class Haptic_Assisted_Inversions_Device_Mat_Test(unittest.TestCase):
     def test_server(self):
         response = self.client.get("/hand")
         assert response.status_code == 200
-        assert "0.0 1.0 1.0 0.0" == response.get_data(as_text=True)
+        assert "0.0 0.0 1.0 1.0 " == response.get_data(as_text=True)
 
 
 if __name__ == '__main__':

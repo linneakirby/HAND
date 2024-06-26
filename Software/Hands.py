@@ -160,7 +160,7 @@ class Hands:
     #      |  
     #      W
     # TODO: needs to be more granular to compare within hands COPs
-    def select_actuators_per_hand(self):
+    def select_actuators_by_hand(self):
         #x value
         if(self.correction_vector[0] >= 0): 
             self.actuators.activate_right()
