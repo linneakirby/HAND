@@ -49,7 +49,7 @@ def process_mat_data(d):
         h.generate_cops()
         h.find_correction_vector()
         print(f"CoP: {h.cop} - ideal {h.ideal_cop}")
-        h.select_2_actuators()
+        h.select_actuators()
     values = str(h.get_actuators())
     print(f"Actuator: {values}")
     return values

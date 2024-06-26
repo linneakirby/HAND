@@ -145,7 +145,7 @@ class Haptic_Assisted_Inversions_Device_Mat_Test(unittest.TestCase):
         h.isolate_hands(m.Values)
         h.generate_cops()
         h.find_correction_vector()
-        h.select_2_actuators()
+        h.select_actuators()
 
         t1 = [4.0/3.0, 1.0]
         t2 = [1.0, 1.0]
@@ -165,7 +165,7 @@ class Haptic_Assisted_Inversions_Device_Mat_Test(unittest.TestCase):
         h.isolate_hands(m.Values)
         h.generate_cops()
         h.find_correction_vector()
-        h.select_2_actuators()
+        h.select_actuators()
 
         self.assertTrue(h.get_actuators().get_index().is_on())
         self.assertFalse(h.get_actuators().get_right().is_on())
@@ -183,7 +183,7 @@ class Haptic_Assisted_Inversions_Device_Mat_Test(unittest.TestCase):
         h.isolate_hands(tm)
         h.generate_cops()
         h.find_correction_vector()
-        h.select_2_actuators()
+        h.select_actuators()
 
         figure, ax = plt.subplots(figsize=(5,5))
         plt.ion()

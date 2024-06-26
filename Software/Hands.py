@@ -138,7 +138,7 @@ class Hands:
     # each hand represents L or R
     # within hand only I and W actuators
     # less granular than using 4
-    def select_2_actuators(self):
+    def select_actuators(self):
         #x value
         if(self.correction_vector[0] >= 0): 
             self.actuators.activate_right()
@@ -160,7 +160,7 @@ class Hands:
     #      |  
     #      W
     # TODO: needs to be more granular to compare within hands COPs
-    def select_4_actuators(self):
+    def select_actuators_per_hand(self):
         #x value
         if(self.correction_vector[0] >= 0): 
             self.actuators.activate_right()
