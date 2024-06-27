@@ -11,7 +11,7 @@ class Server_Test_Test(unittest.TestCase):
     def test_home(self):
         response = self.client.get("/hand")
         assert response.status_code == 200
-        assert "0.8 0.4 0.0 0.0 " == response.get_data(as_text=True)
+        assert "0.8 0.4 0.0 0.0 -1.0 -1.0 -1.0 -1.0 " == response.get_data(as_text=True)
 
 if __name__ == "__main__":
     unittest.main()

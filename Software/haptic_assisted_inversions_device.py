@@ -56,5 +56,5 @@ def process_mat_data(d):
 
 if __name__ == '__main__':
     app, data = create_app()
-    app.run(host='0.0.0.0', port=8090)
+    app.run(host='0.0.0.0', port=8090, threaded=True)
     # time.sleep(0.1) # not sure if server should sleep or if it should all be on the gloves' end
