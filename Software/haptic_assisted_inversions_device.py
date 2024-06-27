@@ -23,13 +23,29 @@ def create_app(data = None):
     if data is None: #if no mat values provided
         data = Mat(hand_utils.get_port())
 
-    @app.route('/hand')
-    def hand():
-        return sendDataToArduino(data)
+    @app.route('/rhand')
+    def rhand():
+        return sendRightHandDataToArduino(data)
+    
+    @app.route('/lhand')
+    def lhand():
+        return sendLeftHandDataToArduino(data)
         
     return app, data
 
-def sendDataToArduino(data):
+def sendRightHandDataToArduino(data):
+    #if data is just mat values snapshot
+    # used for testing without Mat object
+    if isinstance(data, np.ndarray):
+        a = process_mat_data(data)
+    #if data is a Mat object -> used for normal HAND behavior
+    if isinstance(data, Mat):
+        data.get_matrix()
+        print(data)
+        a = process_mat_data(data.Values)
+    return a
+
+def sendLeftHandDataToArduino(data):
     #if data is just mat values snapshot
     # used for testing without Mat object
     if isinstance(data, np.ndarray):
