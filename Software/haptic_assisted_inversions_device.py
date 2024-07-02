@@ -5,6 +5,7 @@ import time
 # My libraries
 from Mat import *
 from Hands import *
+from Actuators import *
 import hand_utils
 
 # Third-party libraries
@@ -34,18 +35,19 @@ def create_app(data = None):
     return app, data
 
 def sendRightHandDataToArduino(data):
-    #if data is just mat values snapshot
-    # used for testing without Mat object
-    if isinstance(data, np.ndarray):
-        a = process_mat_data(data)
-    #if data is a Mat object -> used for normal HAND behavior
-    if isinstance(data, Mat):
-        data.get_matrix()
-        print(data)
-        a = process_mat_data(data.Values)
-    return a
+    a = sendDataToArduinoHelper(data)
+    return a.r_str()
 
 def sendLeftHandDataToArduino(data):
+    a = sendDataToArduinoHelper(data)
+    return a.l_str()
+
+# process both hands
+def sendDataToArduino(data):
+    a = sendDataToArduinoHelper(data)
+    return str(a)
+
+def sendDataToArduinoHelper(data):
     #if data is just mat values snapshot
     # used for testing without Mat object
     if isinstance(data, np.ndarray):
@@ -66,9 +68,8 @@ def process_mat_data(d):
         h.find_correction_vector()
         print(f"CoP: {h.cop} - ideal {h.ideal_cop}")
         h.select_actuators()
-    values = str(h.get_actuators())
-    print(f"Actuator: {values}")
-    return values
+    #return actuators
+    return h.get_actuators
 
 if __name__ == '__main__':
     app, data = create_app()
