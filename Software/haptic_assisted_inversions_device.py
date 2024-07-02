@@ -5,7 +5,6 @@ import time
 # My libraries
 from Mat import *
 from Hands import *
-from Actuators import *
 import hand_utils
 
 # Third-party libraries
@@ -34,19 +33,6 @@ def create_app(data = None):
         
     return app, data
 
-def sendRightHandDataToArduino(data):
-    a = sendDataToArduinoHelper(data)
-    return a.r_str()
-
-def sendLeftHandDataToArduino(data):
-    a = sendDataToArduinoHelper(data)
-    return a.l_str()
-
-# process both hands
-def sendDataToArduino(data):
-    a = sendDataToArduinoHelper(data)
-    return str(a)
-
 def sendDataToArduinoHelper(data):
     #if data is just mat values snapshot
     # used for testing without Mat object
@@ -59,6 +45,19 @@ def sendDataToArduinoHelper(data):
         a = process_mat_data(data.Values)
     return a
 
+# process both hands
+def sendDataToArduino(data):
+    a = sendDataToArduinoHelper(data)
+    return str(a)
+
+def sendRightHandDataToArduino(data):
+    a = sendDataToArduinoHelper(data)
+    return a.r_str()
+
+def sendLeftHandDataToArduino(data):
+    a = sendDataToArduinoHelper(data)
+    return a.l_str()
+
 def process_mat_data(d):
     h = Hands()
     if np.any(d):
@@ -69,7 +68,7 @@ def process_mat_data(d):
         print(f"CoP: {h.cop} - ideal {h.ideal_cop}")
         h.select_actuators()
     #return actuators
-    return h.get_actuators
+    return h.get_actuators()
 
 if __name__ == '__main__':
     app, data = create_app()
