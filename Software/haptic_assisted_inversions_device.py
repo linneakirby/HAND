@@ -30,6 +30,10 @@ def create_app(data = None):
     @app.route('/lhand')
     def lhand():
         return sendLeftHandDataToArduino(data)
+    
+    @app.route('/hand')
+    def hand():
+        return sendDataToArduino(data)
         
     return app, data
 

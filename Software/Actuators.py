@@ -15,6 +15,12 @@ class Actuator:
         s = ""
         s = s + str(self.magnitude)
         return s
+    
+    def set_status(self, status):
+        if(status):
+            self.turn_on(self)
+        else:
+            self.turn_off(self)
 
     def turn_on(self, m=1.0):
         self.status = True
@@ -84,6 +90,18 @@ class Actuator_manager:
         return s
 
 ############# ACTIVATE ACTUATORS #############
+## TWO ACTUATORS ##
+    ### RIGHT HAND ###
+    def set_right_status(self, index=False, wrist=False):
+        self.r_index.set_status(index)
+        self.r_wrist.set_status(wrist)
+
+    ### LEFT HAND ###
+    def set_left_status(self, index=False, wrist=False):
+        self.l_index.set_status(index)
+        self.l_wrist.set_status(wrist)
+
+## FOUR ACTUATORS ##
     ### INDEX ###
     def activate_r_index(self):
         self.r_index.turn_on()

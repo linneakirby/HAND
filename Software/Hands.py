@@ -138,20 +138,39 @@ class Hands:
     # each hand represents L or R
     # within hand only I and W actuators
     # less granular than using 4
+    # x value -> aka left or right hand
+    # if == 0 => activate both actuators to evenly shift towards index or wrist
     def select_actuators(self):
-        #x value
-        if(self.correction_vector[0] >= 0): 
-            self.actuators.activate_right()
-        else:
-            self.actuators.activate_left()
-
-        #y value
-        if(self.correction_vector[1] >= 0):
-            self.actuators.activate_index()
-        else:
-            self.actuators.activate_wrist()
-
+        if(self.correction_vector[0] >= 0): #right hand
+            i, w = self.check_y_value()
+            self.actuators.set_right_status(i, w)
+        elif(self.correction_vector[0] <= 0): #left hand
+            i, w = self.check_y_value()
+            self.actuators.set_left_status(i, w)
         return self.actuators
+    
+    # y value -> aka index or wrist
+    # if == 0 => activate both actuators to evenly shift to one side
+    def check_y_value(self):
+        i = False
+        w = False
+        if(self.correction_vector[1] >= 0): #index
+            i = True
+        elif(self.correction_vector[1] <= 0): #wrist
+            w = True
+        return i, w
+
+    def set_right(self, index=False, wrist=False):
+        self.actuators.set_right_status(index, wrist)
+
+    def set_left(self, index=False, wrist=False):
+        self.actuators.set_left_status(index, wrist)
+
+    def deactivate_right(self):
+        self.set_right(self)
+
+    def deactivate_left(self):
+        self.set_left(self)
 
     # quadrant vector lands in determines which actuators to activate
     #      I
