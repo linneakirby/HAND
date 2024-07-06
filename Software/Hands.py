@@ -1,5 +1,6 @@
 # Standard libraries
 import sys
+import time
 
 # My libraries
 import hand_utils
@@ -14,7 +15,7 @@ np.set_printoptions(threshold=sys.maxsize)
 ROW_SIZE = 48  # Rows of the sensor
 COL_SIZE = 48  # Columns of the sensor
 DEFAULT_PORT = '/dev/cu.usbmodem104742601'
-FIG_PATH = './Results/contour.png'
+FIG_PATH = './Results/contour'+str(time.time)+'.png'
 
 class Hand:
     def __init__(self):
@@ -78,7 +79,6 @@ class Hands:
             for col in range(c):
                 if Z[row][col]!=0:
                     self.coords_only.append([row, col])
-                    #print("Appending: ", row, ",", col)
                     #print(Z[row][col])
                 index+=1
 
@@ -112,7 +112,7 @@ class Hands:
         cop1 = hand_utils.calculate_cop(self.h1.get_points())
         cop2 = hand_utils.calculate_cop(self.h2.get_points())
 
-        if(cop1[0] < cop2[0]): #h1 is left hand
+        if(cop1[1] < cop2[1]): #h1 is left hand
             self.h2.set_right(cop2)
             self.h1.set_left(cop1)
         
@@ -138,27 +138,31 @@ class Hands:
     # each hand represents L or R
     # within hand only I and W actuators
     # less granular than using 4
-    # x value -> aka left or right hand
-    # if == 0 => activate both actuators to evenly shift towards index or wrist
+    # x value -> aka index or wrist
+    # if == 0 => activate both actuators to evenly shift to one side
     def select_actuators(self):
-        if(self.correction_vector[0] >= 0): #right hand
-            i, w = self.check_y_value()
-            self.actuators.set_right_status(i, w)
-        elif(self.correction_vector[0] <= 0): #left hand
-            i, w = self.check_y_value()
-            self.actuators.set_left_status(i, w)
+        li = False
+        lw = False
+        ri = False
+        rw = False
+        if(self.correction_vector[0] >= 0): #wrist
+            lw, rw = self.check_y_value()
+        if(self.correction_vector[0] <= 0): #index
+            li, ri = self.check_y_value()
+        self.actuators.set_right_status(ri, rw)
+        self.actuators.set_left_status(li, lw)
         return self.actuators
     
-    # y value -> aka index or wrist
-    # if == 0 => activate both actuators to evenly shift to one side
+    # y value -> aka left or right hand
+    # if == 0 => activate both actuators to evenly shift towards index or wrist
     def check_y_value(self):
-        i = False
-        w = False
-        if(self.correction_vector[1] >= 0): #index
-            i = True
-        elif(self.correction_vector[1] <= 0): #wrist
-            w = True
-        return i, w
+        l = False
+        r = False
+        if(self.correction_vector[1] <= 0): #left
+            l = True
+        if(self.correction_vector[1] >= 0): #right
+            r = True
+        return l, r
 
     def set_right(self, index=False, wrist=False):
         self.actuators.set_right_status(index, wrist)

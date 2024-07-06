@@ -18,9 +18,9 @@ class Actuator:
     
     def set_status(self, status):
         if(status):
-            self.turn_on(self)
+            self.turn_on()
         else:
-            self.turn_off(self)
+            self.turn_off()
 
     def turn_on(self, m=1.0):
         self.status = True
@@ -51,25 +51,32 @@ class Actuator:
     
 class Actuator_manager:
     def __init__(self):
-        # add right hand actuators
-        self.r_index = Actuator("r_index")
-        self.r_left = Actuator("r_left")
-        self.r_wrist = Actuator("r_wrist")
-        self.r_right = Actuator("r_right")
         # add left hand actuators
         self.l_index = Actuator("l_index")
         self.l_left = Actuator("l_left")
         self.l_wrist = Actuator("l_wrist")
         self.l_right = Actuator("l_right")
+        # add right hand actuators
+        self.r_index = Actuator("r_index")
+        self.r_left = Actuator("r_left")
+        self.r_wrist = Actuator("r_wrist")
+        self.r_right = Actuator("r_right")
 
     def __str__(self):
+        # add left hand actuators
+        s = str(self.l_index) + " " #add left hand index actuator
+        s = s + str(self.l_left) + " " #add left hand left actuator
+        s = s + str(self.l_wrist) + " " #add left hand wrist actuator
+        s = s + str(self.l_right) + " " #add left hand right actuator
         # add right hand actuators
-        s = str(self.r_index) + " " #add right hand index actuator
+        s = s + str(self.r_index) + " " #add right hand index actuator
         s = s + str(self.r_left) + " " #add right hand left actuator
         s = s + str(self.r_wrist) + " " #add right hand wrist actuator
         s = s + str(self.r_right) + " " #add right hand right actuator
-        # add left hand actuators
-        s = s + str(self.l_index) + " " #add left hand index actuator
+        return s
+    
+    def l_str(self):
+        s = str(self.l_index) + " " #add left hand index actuator
         s = s + str(self.l_left) + " " #add left hand left actuator
         s = s + str(self.l_wrist) + " " #add left hand wrist actuator
         s = s + str(self.l_right) + " " #add left hand right actuator
@@ -82,24 +89,19 @@ class Actuator_manager:
         s = s + str(self.r_right) + " " #add right hand right actuator
         return s
     
-    def l_str(self):
-        s = str(self.l_index) + " " #add left hand index actuator
-        s = s + str(self.l_left) + " " #add left hand left actuator
-        s = s + str(self.l_wrist) + " " #add left hand wrist actuator
-        s = s + str(self.l_right) + " " #add left hand right actuator
-        return s
+
 
 ############# ACTIVATE ACTUATORS #############
 ## TWO ACTUATORS ##
-    ### RIGHT HAND ###
-    def set_right_status(self, index=False, wrist=False):
-        self.r_index.set_status(index)
-        self.r_wrist.set_status(wrist)
-
     ### LEFT HAND ###
     def set_left_status(self, index=False, wrist=False):
         self.l_index.set_status(index)
         self.l_wrist.set_status(wrist)
+
+    ### RIGHT HAND ###
+    def set_right_status(self, index=False, wrist=False):
+        self.r_index.set_status(index)
+        self.r_wrist.set_status(wrist)
 
 ## FOUR ACTUATORS ##
     ### INDEX ###

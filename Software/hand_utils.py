@@ -1,5 +1,6 @@
 # Standard libraries
 import sys
+import datetime
 
 # Third-party libraries
 import matplotlib.pyplot as plt
@@ -11,6 +12,7 @@ np.set_printoptions(threshold=sys.maxsize)
 ROW_SIZE = 48  # Rows of the sensor
 COL_SIZE = 48  # Columns of the sensor
 DEFAULT_PORT = '/dev/cu.usbmodem104742601'
+FIG_PATH = './Results/correction_'+datetime.datetime.now().strftime("%d/%m/%Y-%H:%M:%S")+'.png'
 
 def get_port():
     # This is how serial ports are organized on macOS.
@@ -53,18 +55,18 @@ def calculate_cop(pv_dict):
 def create_vector(start, end):
     return (end[0]-start[0], end[1]-start[1])
 
-def generate_scatter_plot(kmeans, coords_only, rcop, lcop, ideal_cop, actual_cop, figure, r=ROW_SIZE, c=COL_SIZE):
+def generate_scatter_plot(kmeans, coords_only, rcop, lcop, ideal_cop, actual_cop, figure, r=ROW_SIZE, c=COL_SIZE, fp=FIG_PATH):
     index = 0
     for row in range(r):
         for col in range(c):
             if [row, col] in coords_only:
-                if kmeans.labels_[index] == 1:
+                if kmeans.labels_[index] == 0:
                     plt.scatter(
                         row, col,
                         s=40, c='orange',
                         marker='o', edgecolor='black'
                     )
-                if kmeans.labels_[index] == 0:
+                if kmeans.labels_[index] == 1:
                     plt.scatter(
                         row, col,
                         s=40, c='violet',
@@ -75,12 +77,12 @@ def generate_scatter_plot(kmeans, coords_only, rcop, lcop, ideal_cop, actual_cop
     # add center of pressure markers
     plt.scatter(
         rcop[0], rcop[1],
-        s=60, c='orangered',
+        s=60, c='indigo',
         marker='s', edgecolor='lime', label='right CoP'
         )
     plt.scatter(
         lcop[0], lcop[1],
-        s=60, c='indigo',
+        s=60, c='orangered',
         marker='s', edgecolor='lime', label='left CoP'
         )
     plt.scatter(
@@ -105,7 +107,8 @@ def generate_scatter_plot(kmeans, coords_only, rcop, lcop, ideal_cop, actual_cop
 
     #plt.legend(scatterpoints=1)
     # plt.grid()
-    # plt.draw()
+    plt.draw()
+    plt.savefig(fp)
     #plt.show()
     figure.canvas.draw()
     figure.canvas.flush_events()

@@ -2,6 +2,7 @@
 import subprocess
 import sys
 import time
+import datetime
 
 # Third-party libraries
 import cv2
@@ -14,7 +15,7 @@ import serial.tools.list_ports
 ROWS = 48  # Rows of the sensor
 COLS = 48  # Columns of the sensor
 DEFAULT_PORT = '/dev/cu.usbmodem104742601'
-FIG_PATH = './Results/contour.png'
+FIG_PATH = './Results/contour_'+datetime.datetime.now().strftime("%d/%m/%Y-%H:%M:%S")+'.png'
 CONTOUR = True
 if CONTOUR:
     plt.style.use('_mpl-gallery-nogrid')
@@ -81,19 +82,19 @@ class Mat:
         self.RequestPressureMap()
         self.activePointsGetMap()
     
-    def plotMatrix(self):
-        tmparray = np.zeros((ROWS, COLS))
-        for i in range(COLS):
+    def plotMatrix(self, c=COLS, r=ROWS):
+        tmparray = np.zeros((r, c))
+        for i in range(c):
             tmp = ""
-            for j in range(ROWS):
+            for j in range(r):
                 tmp = int(self.Values[i][j])
                 tmparray[i][j] = tmp
         generatePlot(tmparray)
 
-    def printMatrix(self):
-        for i in range(COLS):
+    def printMatrix(self, c=COLS, r=ROWS):
+        for i in range(c):
             tmp = ""
-            for j in range(ROWS):
+            for j in range(r):
                 tmp = tmp +   hex(int(self.Values[i][j]))[-1]
             print(tmp)
         print("\n")
@@ -108,20 +109,20 @@ def getPort():
     return np.load("./Testing/hands.npy")
 
 
-def generatePlot(Z):
+def generatePlot(Z, fp=FIG_PATH):
     plt.ion()
     fig, ax = plt.subplots(figsize=(5,5))
 
     ax.contourf(np.arange(0, ROWS), np.arange(0, COLS), Z, levels=7, cmap="nipy_spectral")
 
     plt.draw()
-    plt.savefig(FIG_PATH)
+    plt.savefig(fp)
     plt.pause(0.0001)
     plt.clf()
 
-def getBlobs():
+def getBlobs(fp=FIG_PATH):
     # Read image
-    im = cv2.imread(FIG_PATH, cv2.IMREAD_GRAYSCALE)
+    im = cv2.imread(fp, cv2.IMREAD_GRAYSCALE)
 
     # Setup SimpleBlobDetector parameters.
     params = cv2.SimpleBlobDetector_Params()
@@ -170,9 +171,9 @@ def getBlobs():
         cv2.imshow("Keypoints", im_with_keypoints)
         cv2.waitKey(0)
 
-def getBlobs2():
+def getBlobs2(fp=FIG_PATH):
     # read image through command line
-    img = cv2.imread(FIG_PATH)
+    img = cv2.imread(fp)
 
     # convert the image to grayscale
     gray_image = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)

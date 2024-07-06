@@ -1,5 +1,6 @@
 import sys
 sys.path.append("../")
+import datetime
 
 # For mat tests
 import unittest
@@ -20,14 +21,14 @@ class Haptic_Assisted_Inversions_Device_Mat_Test(unittest.TestCase):
 
     #make sure mat data can be accessed
     def test_load_mat_data(self):
-        hands_array = np.load("./hands.npy")
+        hands_array = np.load("./hands_rot.npy")
         m = Mat(hands_array)
         self.assertIsInstance(m.Values, np.ndarray)
 
     #make sure there are only 2 clusters
     def test_k_means(self):
         h = Hands()
-        hands_array = np.load("./hands.npy")
+        hands_array = np.load("./hands_rot.npy")
         h.run_kmeans(hands_array)
 
         self.assertEqual(len(h.kmeans.cluster_centers_), 2)
@@ -79,7 +80,7 @@ class Haptic_Assisted_Inversions_Device_Mat_Test(unittest.TestCase):
 
     #make sure can separate and correctly label the hands
     def test_isolate_hands_ordered(self):
-        hands_array = np.array([[0.0, 1.0, 0.0], [0.0, 0.0, 0.0], [0.0, 2.0, 0.0]])
+        hands_array = np.array([[0.0, 0.0, 0.0], [1.0, 0.0, 2.0], [0.0, 0.0, 0.0]])
         m = Mat(hands_array)
 
         h = Hands()
@@ -94,8 +95,8 @@ class Haptic_Assisted_Inversions_Device_Mat_Test(unittest.TestCase):
         #     print(tmp)
         # print("\n")
 
-        self.assertEqual(h.get_right_hand().get_points().get((2, 1)), 2.0)
-        self.assertEqual(h.get_left_hand().get_points().get((0, 1)), 1.0)
+        self.assertEqual(h.get_right_hand().get_points().get((1, 2)), 2.0)
+        self.assertEqual(h.get_left_hand().get_points().get((1, 0)), 1.0)
 
     #make sure the basic cop calculation function works
     def test_calculate_cop(self):
@@ -112,17 +113,16 @@ class Haptic_Assisted_Inversions_Device_Mat_Test(unittest.TestCase):
 
     #make sure it's doing all the calculations properly on a simple mat example
     def test_cop_calculations(self):
-        hands_array = np.array([[0.0, 1.0, 0.0], [0.0, 0.0, 0.0], [0.0, 2.0, 0.0]])
+        hands_array = np.array([[0.0, 0.0, 0.0], [1.0, 0.0, 2.0], [0.0, 0.0, 0.0]])
         m = Mat(hands_array)
-
         h = Hands()
         h.run_kmeans(m.Values, 3, 3)
         h.isolate_hands(m.Values)
         h.generate_cops()
 
-        self.assertEqual(h.get_right_hand().get_cop(), [2.0, 1.0])
-        self.assertEqual(h.get_left_hand().get_cop(), [0.0, 1.0])
-        self.assertEqual(h.get_cop(), [4.0/3.0, 1.0])
+        self.assertEqual(h.get_right_hand().get_cop(), [1.0, 2.0])
+        self.assertEqual(h.get_left_hand().get_cop(), [1.0, 0.0])
+        self.assertEqual(h.get_cop(), [1.0, 4.0/3.0])
         self.assertEqual(h.get_ideal_cop(), [1.0, 1.0])
 
     #make sure the basic vector calculation function works
@@ -157,48 +157,71 @@ class Haptic_Assisted_Inversions_Device_Mat_Test(unittest.TestCase):
 
     #make sure the actuators are selected properly using a simple mat example
     def test_select_actuators(self):
-        hands_array = np.array([[0.0, 1.0, 0.0], [0.0, 0.0, 0.0], [0.0, 2.0, 0.0]])
+        hands_array = np.array([[0.0, 0.0, 0.0], [1.0, 0.0, 2.0], [0.0, 0.0, 0.0]])
         m = Mat(hands_array)
 
         h = Hands()
         h.run_kmeans(m.Values, 3, 3)
         h.isolate_hands(m.Values)
         h.generate_cops()
+
+        right = h.get_right_hand()
+        left = h.get_left_hand()
+        print("right: ", right.get_points())
+        print("left: ", left.get_points())
+
         h.find_correction_vector()
+        print(f"CoP: {h.cop} - ideal {h.ideal_cop}")
+        print("vector: ", h.get_correction_vector())
         h.select_actuators()
 
-        self.assertTrue(h.get_actuators().get_r_index().is_on())
+        print("actuators: ", h.actuators)
+
+        self.assertFalse(h.get_actuators().get_r_index().is_on())
         self.assertFalse(h.get_actuators().get_r_right().is_on())
         self.assertFalse(h.get_actuators().get_r_wrist().is_on())
-        self.assertTrue(h.get_actuators().get_r_left().is_on())
+        self.assertFalse(h.get_actuators().get_r_left().is_on())
+        self.assertTrue(h.get_actuators().get_l_index().is_on())
+        self.assertFalse(h.get_actuators().get_l_right().is_on())
+        self.assertTrue(h.get_actuators().get_l_wrist().is_on())
+        self.assertFalse(h.get_actuators().get_l_left().is_on())
 
     #make sure an entire loop runs properly
     def test_scatter_plot_integrated(self):
-        hands_array = np.load(os.getcwd() + "/hands.npy")
+        hands_array = np.load(os.getcwd() + "/hands_rot.npy")
         m = Mat(hands_array)
-        tm = np.rot90(m.Values, 2)
+        #tm = np.rot90(m.Values, 2)
 
         h = Hands()
-        h.run_kmeans(tm)
-        h.isolate_hands(tm)
+        h.run_kmeans(hands_array)
+        h.isolate_hands(hands_array)
         h.generate_cops()
         h.find_correction_vector()
         h.select_actuators()
 
         figure, ax = plt.subplots(figsize=(5,5))
         plt.ion()
-        hand_utils.generate_scatter_plot(h.kmeans, h.coords_only, h.get_right_hand().get_cop(), h.get_left_hand().get_cop(), h.get_ideal_cop(), h.get_cop(), figure)
+        script_dir = os.path.dirname(__file__)
+        results_dir = os.path.join(script_dir, 'Results/')
+        sample_file_name = 'test'
+        #sample_file_name = 'correction_'+datetime.datetime.now().strftime("%d/%m/%Y-%H:%M:%S")+'.png'
+
+        hand_utils.generate_scatter_plot(h.kmeans, h.coords_only, h.get_right_hand().get_cop(), h.get_left_hand().get_cop(), h.get_ideal_cop(), h.get_cop(), figure, fp=results_dir+sample_file_name)
         plt.show()
 
         #print(actuators)
 
-        self.assertTrue(h.actuators.get_r_index().is_on())
-        self.assertFalse(h.actuators.get_r_right().is_on())
-        self.assertFalse(h.actuators.get_r_wrist().is_on())
-        self.assertTrue(h.actuators.get_r_left().is_on())
+        self.assertFalse(h.get_actuators().get_r_index().is_on())
+        self.assertFalse(h.get_actuators().get_r_right().is_on())
+        self.assertFalse(h.get_actuators().get_r_wrist().is_on())
+        self.assertFalse(h.get_actuators().get_r_left().is_on())
+        self.assertTrue(h.get_actuators().get_l_index().is_on())
+        self.assertFalse(h.get_actuators().get_l_right().is_on())
+        self.assertFalse(h.get_actuators().get_l_wrist().is_on())
+        self.assertFalse(h.get_actuators().get_l_left().is_on())
 
     ### SERVER TESTS BELOW ###
-    hands_array = np.load(os.getcwd() + "/hands.npy")
+    hands_array = np.load(os.getcwd() + "/hands_rot.npy")
     app, data = hand.create_app(hands_array)
 
     #create test client
@@ -207,18 +230,21 @@ class Haptic_Assisted_Inversions_Device_Mat_Test(unittest.TestCase):
 
     def test_server_rhand(self):
         rresponse = self.client.get("/rhand")
+        print("r response: ", rresponse.get_data(as_text=True))
         assert rresponse.status_code == 200
-        assert "0.0 0.0 1.0 1.0 " == rresponse.get_data(as_text=True)
+        assert "0.0 0.0 0.0 0.0 " == rresponse.get_data(as_text=True)
 
     def test_server_lhand(self):
         lresponse = self.client.get("/lhand")
+        print("l response: ", lresponse.get_data(as_text=True))
         assert lresponse.status_code == 200
-        assert "0.0 0.0 1.0 1.0 " == lresponse.get_data(as_text=True)
+        assert "1.0 0.0 0.0 0.0 " == lresponse.get_data(as_text=True)
 
     def test_server_hand(self):
         response = self.client.get("/hand")
+        print("response: ", response.get_data(as_text=True))
         assert response.status_code == 200
-        assert "0.0 0.0 1.0 1.0 0.0 0.0 1.0 1.0 " == response.get_data(as_text=True)
+        assert "1.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 " == response.get_data(as_text=True)
 
 
 if __name__ == '__main__':
