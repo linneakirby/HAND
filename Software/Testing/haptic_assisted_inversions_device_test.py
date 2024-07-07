@@ -55,7 +55,7 @@ class Haptic_Assisted_Inversions_Device_Mat_Test(unittest.TestCase):
 
     #make sure can find 2 clusters with a simple 2d mat
     def test_kmeans(self):
-        hands_array = np.array([[0.0, 1.0, 0.0], [0.0, 0.0, 0.0], [0.0, 2.0, 0.0]])
+        hands_array = np.array([[0.0, 0.0, 0.0], [1.0, 0.0, 2.0], [0.0, 0.0, 0.0]])
         m = Mat(hands_array)
         h = Hands()
         h.run_kmeans(m.Values, 3, 3)
@@ -64,7 +64,7 @@ class Haptic_Assisted_Inversions_Device_Mat_Test(unittest.TestCase):
 
     #make sure can find and separate 2 UNORDERED hands with a simple 2d mat
     def test_isolate_hands_unordered(self):
-        hands_array = np.array([[0.0, 1.0, 0.0], [0.0, 0.0, 0.0], [0.0, 2.0, 0.0]])
+        hands_array = np.array([[0.0, 0.0, 0.0], [1.0, 0.0, 2.0], [0.0, 0.0, 0.0]])
         m = Mat(hands_array)
 
         h = Hands()
@@ -88,15 +88,8 @@ class Haptic_Assisted_Inversions_Device_Mat_Test(unittest.TestCase):
         h.isolate_hands(m.Values)
         h.generate_cops()
 
-        # for j in range(3-1, -1, -1):
-        #     tmp = ""
-        #     for i in range(3):
-        #         tmp = tmp +   hex(int(m.Values[i][j]))[-1]
-        #     print(tmp)
-        # print("\n")
-
-        self.assertEqual(h.get_right_hand().get_points().get((1, 2)), 2.0)
-        self.assertEqual(h.get_left_hand().get_points().get((1, 0)), 1.0)
+        self.assertEqual(h.get_right_hand().get_points().get((2, 1)), 2.0)
+        self.assertEqual(h.get_left_hand().get_points().get((0, 1)), 1.0)
 
     #make sure the basic cop calculation function works
     def test_calculate_cop(self):
@@ -120,9 +113,9 @@ class Haptic_Assisted_Inversions_Device_Mat_Test(unittest.TestCase):
         h.isolate_hands(m.Values)
         h.generate_cops()
 
-        self.assertEqual(h.get_right_hand().get_cop(), [1.0, 2.0])
-        self.assertEqual(h.get_left_hand().get_cop(), [1.0, 0.0])
-        self.assertEqual(h.get_cop(), [1.0, 4.0/3.0])
+        self.assertEqual(h.get_right_hand().get_cop(), [2.0, 1.0])
+        self.assertEqual(h.get_left_hand().get_cop(), [0.0, 1.0])
+        self.assertEqual(h.get_cop(), [4.0/3.0, 1.0])
         self.assertEqual(h.get_ideal_cop(), [1.0, 1.0])
 
     #make sure the basic vector calculation function works
@@ -137,7 +130,7 @@ class Haptic_Assisted_Inversions_Device_Mat_Test(unittest.TestCase):
 
     #make sure the vector is calculated properly using a simple mat example
     def test_vector(self):
-        hands_array = np.array([[0.0, 1.0, 0.0], [0.0, 0.0, 0.0], [0.0, 2.0,0.0]])
+        hands_array = np.array([[0.0, 0.0, 0.0], [1.0, 0.0, 2.0], [0.0, 0.0,0.0]])
         m = Mat(hands_array)
 
         h = Hands()
@@ -167,12 +160,12 @@ class Haptic_Assisted_Inversions_Device_Mat_Test(unittest.TestCase):
 
         right = h.get_right_hand()
         left = h.get_left_hand()
-        print("right: ", right.get_points())
-        print("left: ", left.get_points())
+        #print("right: ", right.get_points())
+        #print("left: ", left.get_points())
 
         h.find_correction_vector()
-        print(f"CoP: {h.cop} - ideal {h.ideal_cop}")
-        print("vector: ", h.get_correction_vector())
+        #print(f"CoP: {h.cop} - ideal {h.ideal_cop}")
+        #print("vector: ", h.get_correction_vector())
         h.select_actuators()
 
         print("actuators: ", h.actuators)
@@ -191,6 +184,7 @@ class Haptic_Assisted_Inversions_Device_Mat_Test(unittest.TestCase):
         hands_array = np.load(os.getcwd() + "/hands_rot.npy")
         m = Mat(hands_array)
         #tm = np.rot90(m.Values, 2)
+        print(m)
 
         h = Hands()
         h.run_kmeans(hands_array)
@@ -203,10 +197,10 @@ class Haptic_Assisted_Inversions_Device_Mat_Test(unittest.TestCase):
         plt.ion()
         script_dir = os.path.dirname(__file__)
         results_dir = os.path.join(script_dir, 'Results/')
-        sample_file_name = 'test'
-        #sample_file_name = 'correction_'+datetime.datetime.now().strftime("%d/%m/%Y-%H:%M:%S")+'.png'
+        sample_file_name = results_dir+'test'
+        #sample_file_name = results_dir+'correction_'+datetime.datetime.now().strftime("%d/%m/%Y-%H:%M:%S")+'.png'
 
-        hand_utils.generate_scatter_plot(h.kmeans, h.coords_only, h.get_right_hand().get_cop(), h.get_left_hand().get_cop(), h.get_ideal_cop(), h.get_cop(), figure, fp=results_dir+sample_file_name)
+        hand_utils.generate_scatter_plot(h.kmeans, h.coords_only, h.get_right_hand().get_cop(), h.get_left_hand().get_cop(), h.get_ideal_cop(), h.get_cop(), figure, fp=sample_file_name)
         plt.show()
 
         #print(actuators)

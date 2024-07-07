@@ -84,18 +84,18 @@ class Mat:
     
     def plotMatrix(self, c=COLS, r=ROWS):
         tmparray = np.zeros((r, c))
-        for i in range(c):
+        for x in range(c): #x
             tmp = ""
-            for j in range(r):
-                tmp = int(self.Values[i][j])
-                tmparray[i][j] = tmp
+            for y in range(r): #y
+                tmp = int(self.Values[x][y])
+                tmparray[x][y] = tmp
         generatePlot(tmparray)
 
     def printMatrix(self, c=COLS, r=ROWS):
-        for i in range(c):
+        for x in range(c): #x
             tmp = ""
-            for j in range(r):
-                tmp = tmp +   hex(int(self.Values[i][j]))[-1]
+            for y in range(r): #y
+                tmp = tmp +   hex(int(self.Values[x][y]))[-1]
             print(tmp)
         print("\n")
 

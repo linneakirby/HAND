@@ -14,8 +14,8 @@ np.set_printoptions(threshold=sys.maxsize)
 from flask import Flask
 
 # Default parameters
-ROW_SIZE = 48  # Rows of the sensor
-COL_SIZE = 48  # Columns of the sensor
+ROWS = 48  # Rows of the sensor
+COLS = 48  # Columns of the sensor
 DEFAULT_PORT = '/dev/cu.usbmodem104742601'
 
 def create_app(data = None):

@@ -7,8 +7,8 @@ import serial.tools.list_ports
 np.set_printoptions(threshold=sys.maxsize)
 
 # Default parameters
-ROW_SIZE = 48  # Rows of the sensor
-COL_SIZE = 48  # Columns of the sensor
+ROWS = 48  # Rows of the sensor
+COLS = 48  # Columns of the sensor
 DEFAULT_PORT = '/dev/cu.usbmodem104742601'
 FIG_PATH = './Results/contour.png'
 
@@ -22,14 +22,14 @@ class Mat:
                 port,
                 baudrate=115200,
                 timeout=0.1)
-            self.Values = np.zeros((ROW_SIZE, COL_SIZE))
+            self.Values = np.zeros((ROWS, COLS))
 
     def request_pressure_map(self):
         data = "R"
         print(f"N bytes written: {self.ser.write(data.encode())}")
 
     def active_points_receive_map(self):
-        matrix = np.zeros((ROW_SIZE, COL_SIZE), dtype=int)
+        matrix = np.zeros((ROWS, COLS), dtype=int)
 
         xbyte = self.ser.read().decode('utf-8')
 
@@ -74,13 +74,21 @@ class Mat:
         self.request_pressure_map()
         self.active_points_get_map()
 
+    def printMatrix(self, c=COLS, r=ROWS):
+        for x in range(c): #x
+            tmp = ""
+            for y in range(r): #y
+                tmp = tmp +   hex(int(self.Values[x][y]))[-1]
+            print(tmp)
+        print("\n")
+
 
     def __str__(self):
         s = ""
-        for j in range(COL_SIZE-1, -1, -1):
+        for x in range(COLS): #x
             tmp = ""
-            for i in range(ROW_SIZE):
-                tmp = tmp +   hex(int(self.Values[i][j]))[-1]
+            for y in range(ROWS): #y
+                tmp = tmp +   hex(int(self.Values[x][y]))[-1]
             s = s+tmp
             s = s+"\n"
 

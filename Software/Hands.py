@@ -75,11 +75,11 @@ class Hands:
         # of the points--not the sensor reading--when clustering.
         index = 0
 
-        for row in range(r):
-            for col in range(c):
-                if Z[row][col]!=0:
-                    self.coords_only.append([row, col])
-                    #print(Z[row][col])
+        for x in range(c): #x
+            for y in range(r): #y
+                if Z[y][x]!=0:
+                    self.coords_only.append([x, y])
+                    #print(Z[x][y])
                 index+=1
 
         if not self.coords_only:
@@ -93,17 +93,17 @@ class Hands:
         index = 0
         h1_index = 0
         h2_index = 0
-        for row in range(ROW_SIZE):
-            for col in range(COL_SIZE):
-                #print("Looking at: ", row, ",",col)
-                if ([row, col] in self.coords_only):
+        for x in range(COL_SIZE):
+            for y in range(ROW_SIZE):
+                #print("Looking at: ", x, ",",y)
+                if ([x, y] in self.coords_only):
                     if (self.kmeans.labels_[index] == 0): #h1
-                        #print("Adding to h1\nkey: ", row, ",", col, "\nvalue: ", Z[row][col])
-                        self.h1.add_point((row, col), Z[row][col])
+                        #print("Adding to h1\nkey: ", x, ",", y, "\nvalue: ", Z[y][x])
+                        self.h1.add_point((x, y), Z[y][x])
                         h1_index+=1
                     if (self.kmeans.labels_[index] == 1): #h2
-                        #print("Adding to h2\nkey: ", row, ",", col, "\nvalue: ", Z[row][col])
-                        self.h2.add_point((row, col), Z[row][col])
+                        #print("Adding to h2\nkey: ", x, ",", y, "\nvalue: ", Z[y][x])
+                        self.h2.add_point((x, y), Z[y][x])
                         h2_index+=1
                     index+=1
 
@@ -112,7 +112,7 @@ class Hands:
         cop1 = hand_utils.calculate_cop(self.h1.get_points())
         cop2 = hand_utils.calculate_cop(self.h2.get_points())
 
-        if(cop1[1] < cop2[1]): #h1 is left hand
+        if(cop1[0] < cop2[0]): #h1 is left hand
             self.h2.set_right(cop2)
             self.h1.set_left(cop1)
         
@@ -124,6 +124,8 @@ class Hands:
         both_hands = dict()
         both_hands.update(self.h1.get_points())
         both_hands.update(self.h2.get_points())
+        #print("both hands: ")
+        #print(both_hands)
         self.cop = hand_utils.calculate_cop(both_hands)
 
         ideal_hands = dict()
@@ -138,31 +140,31 @@ class Hands:
     # each hand represents L or R
     # within hand only I and W actuators
     # less granular than using 4
-    # x value -> aka index or wrist
-    # if == 0 => activate both actuators to evenly shift to one side
+    # x value -> aka left or right hand
+    # if == 0 => activate both actuators to evenly shift towards index or wrist
     def select_actuators(self):
         li = False
         lw = False
         ri = False
         rw = False
-        if(self.correction_vector[0] >= 0): #wrist
-            lw, rw = self.check_y_value()
-        if(self.correction_vector[0] <= 0): #index
-            li, ri = self.check_y_value()
+        if(self.correction_vector[0] >= 0): #right
+            ri, rw = self.check_y_value()
+        if(self.correction_vector[0] <= 0): #left
+            li, lw = self.check_y_value()
         self.actuators.set_right_status(ri, rw)
         self.actuators.set_left_status(li, lw)
         return self.actuators
     
-    # y value -> aka left or right hand
-    # if == 0 => activate both actuators to evenly shift towards index or wrist
+    # y value -> aka index or wrist
+    # if == 0 => activate both actuators to evenly shift to one side
     def check_y_value(self):
-        l = False
-        r = False
-        if(self.correction_vector[1] <= 0): #left
-            l = True
-        if(self.correction_vector[1] >= 0): #right
-            r = True
-        return l, r
+        i = False
+        w = False
+        if(self.correction_vector[1] <= 0): #index
+            i = True
+        if(self.correction_vector[1] >= 0): #wrist
+            w = True
+        return i, w
 
     def set_right(self, index=False, wrist=False):
         self.actuators.set_right_status(index, wrist)
