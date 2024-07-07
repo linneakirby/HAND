@@ -59,6 +59,8 @@ def get_filepath():
     return './Results/correction_'+datetime.datetime.now().strftime("%d/%m/%Y-%H:%M:%S")+'.png'
 
 def generate_scatter_plot(kmeans, coords_only, rcop, lcop, ideal_cop, actual_cop, figure, ax, r=ROW_SIZE, c=COL_SIZE, fp=get_filepath()):
+    ax.invert_yaxis()
+
     index = 0
     for x in range(c): #x
         for y in range(r): #y
@@ -66,44 +68,44 @@ def generate_scatter_plot(kmeans, coords_only, rcop, lcop, ideal_cop, actual_cop
                 #print("looking at: "+str(col)+","+str(row))
                 if kmeans.labels_[index] == 0:
                     plt.scatter(
-                        x, -y+COL_SIZE,
-                        s=40, c='blue',
-                        marker='^', edgecolor='black'
+                        x, y,
+                        s=40, c='#cea2fd',
+                        marker='^', edgecolor='gray'
                     )
                 if kmeans.labels_[index] == 1:
                     plt.scatter(
-                        x, -y+COL_SIZE,
-                        s=40, c='blue',
-                        marker='v', edgecolor='black'
+                        x, y,
+                        s=40, c='#ffb07c',
+                        marker='v', edgecolor='gray'
                     )
                 index+=1
 
     # add center of pressure markers
     plt.scatter(
-        rcop[0], -rcop[1]+COL_SIZE,
-        s=60, c='green',
-        marker='>', edgecolor='yellow', label='right CoP'
+        rcop[0], rcop[1],
+        s=60, c='#fc824a',
+        marker='>', edgecolor='black', label='right CoP'
         )
     plt.scatter(
-        lcop[0], -lcop[1]+COL_SIZE,
-        s=60, c='green',
-        marker='<', edgecolor='yellow', label='left CoP'
+        lcop[0], lcop[1],
+        s=60, c='#5d21d0',
+        marker='<', edgecolor='black', label='left CoP'
         )
     plt.scatter(
-        ideal_cop[0], -ideal_cop[1]+COL_SIZE,
-        s=60, c='orange',
-        marker='X', edgecolor='brown', label='ideal CoP'
+        ideal_cop[0], ideal_cop[1],
+        s=60, c='lime',
+        marker='X', edgecolor='black', label='ideal CoP'
         )
     plt.scatter(
-        actual_cop[0], -actual_cop[1]+COL_SIZE,
-        s=60, c='orange',
-        marker='P', edgecolor='brown', label='current CoP'
+        actual_cop[0], actual_cop[1],
+        s=60, c='#fedf08',
+        marker='P', edgecolor='black', label='current CoP'
         )
 
     # add vector
     dx = ideal_cop[0] - actual_cop[0]
-    dy = -(ideal_cop[1] - actual_cop[1])
-    plt.arrow(actual_cop[0], -actual_cop[1]+COL_SIZE, dx, dy, facecolor = "red", edgecolor = "none",length_includes_head=True, width=.2)
+    dy = ideal_cop[1] - actual_cop[1]
+    plt.arrow(actual_cop[0], actual_cop[1], dx, dy, facecolor = "red", edgecolor = "black", length_includes_head=True, head_width = 1, width= .3)
 
     # add legend
     ax.legend()
