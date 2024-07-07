@@ -58,7 +58,7 @@ def create_vector(start, end):
 def get_filepath():
     return './Results/correction_'+datetime.datetime.now().strftime("%d/%m/%Y-%H:%M:%S")+'.png'
 
-def generate_scatter_plot(kmeans, coords_only, rcop, lcop, ideal_cop, actual_cop, figure, r=ROW_SIZE, c=COL_SIZE, fp=get_filepath()):
+def generate_scatter_plot(kmeans, coords_only, rcop, lcop, ideal_cop, actual_cop, figure, ax, r=ROW_SIZE, c=COL_SIZE, fp=get_filepath()):
     index = 0
     for x in range(c): #x
         for y in range(r): #y
@@ -67,13 +67,13 @@ def generate_scatter_plot(kmeans, coords_only, rcop, lcop, ideal_cop, actual_cop
                 if kmeans.labels_[index] == 0:
                     plt.scatter(
                         x, -y+COL_SIZE,
-                        s=40, c='orange',
-                        marker='o', edgecolor='black'
+                        s=40, c='blue',
+                        marker='^', edgecolor='black'
                     )
                 if kmeans.labels_[index] == 1:
                     plt.scatter(
                         x, -y+COL_SIZE,
-                        s=40, c='violet',
+                        s=40, c='blue',
                         marker='v', edgecolor='black'
                     )
                 index+=1
@@ -81,33 +81,33 @@ def generate_scatter_plot(kmeans, coords_only, rcop, lcop, ideal_cop, actual_cop
     # add center of pressure markers
     plt.scatter(
         rcop[0], -rcop[1]+COL_SIZE,
-        s=60, c='indigo',
-        marker='s', edgecolor='lime', label='right CoP'
+        s=60, c='green',
+        marker='>', edgecolor='yellow', label='right CoP'
         )
     plt.scatter(
         lcop[0], -lcop[1]+COL_SIZE,
-        s=60, c='orangered',
-        marker='s', edgecolor='lime', label='left CoP'
+        s=60, c='green',
+        marker='<', edgecolor='yellow', label='left CoP'
         )
     plt.scatter(
         ideal_cop[0], -ideal_cop[1]+COL_SIZE,
-        s=60, c='dodgerblue',
-        marker='s', edgecolor='lime', label='ideal CoP'
+        s=60, c='orange',
+        marker='X', edgecolor='brown', label='ideal CoP'
         )
     plt.scatter(
         actual_cop[0], -actual_cop[1]+COL_SIZE,
-        s=60, c='aquamarine',
-        marker='s', edgecolor='lime', label='current CoP'
+        s=60, c='orange',
+        marker='P', edgecolor='brown', label='current CoP'
         )
 
     # add vector
     dx = ideal_cop[0] - actual_cop[0]
     dy = -(ideal_cop[1] - actual_cop[1])
-    plt.arrow(actual_cop[0], -actual_cop[1]+COL_SIZE, dx, dy, facecolor = "red", edgecolor = "none", width=.2)
+    plt.arrow(actual_cop[0], -actual_cop[1]+COL_SIZE, dx, dy, facecolor = "red", edgecolor = "none",length_includes_head=True, width=.2)
 
     # add legend
-    plt.legend(loc='upper center', bbox_to_anchor=(0.5, -0.05), 
-           ncol=5)
+    ax.legend()
+    #plt.legend(loc='upper center', bbox_to_anchor=(0.5, -0.05), ncol=5)
 
     #plt.legend(scatterpoints=1)
     # plt.grid()

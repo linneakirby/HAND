@@ -200,7 +200,7 @@ class Haptic_Assisted_Inversions_Device_Mat_Test(unittest.TestCase):
         sample_file_name = results_dir+'test'
         #sample_file_name = results_dir+'correction_'+datetime.datetime.now().strftime("%d/%m/%Y-%H:%M:%S")+'.png'
 
-        hand_utils.generate_scatter_plot(h.kmeans, h.coords_only, h.get_right_hand().get_cop(), h.get_left_hand().get_cop(), h.get_ideal_cop(), h.get_cop(), figure, fp=sample_file_name)
+        hand_utils.generate_scatter_plot(h.kmeans, h.coords_only, h.get_right_hand().get_cop(), h.get_left_hand().get_cop(), h.get_ideal_cop(), h.get_cop(), figure, ax, fp=sample_file_name)
         plt.show()
 
         #print(actuators)
