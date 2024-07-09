@@ -12,25 +12,15 @@
 
 ESP8266WiFiMulti WiFiMulti;
 
-//CHANGEABLE VARIABLES
-const bool LEFT = true;
-const bool LOCAL = true;
-const bool TWO_ACTS = true;
+//USER-CHANGEABLE VARIABLES
+const bool LEFT_HAND = true;
+const bool LOCAL_NETWORK = true;
+const bool TWO_ACTUATORS = true;
 
-
-//if using local network
-if(LOCAL) {
-  const char* NETWORK = "ALTIMA_MESH-F19FC8";
-  const char* PASSWORD = "92f19fc8";
-  const char* HTTP_LEFT = "http://192.168.11.2:8090/lhand";
-  const char* HTTP_RIGHT = "http://192.168.11.2:8090/rhand";
-}
-else{ //// if using home network
-//const char* NETWORK = "THE DANGER ZONE";
-//const char* PASSWORD = "allhailqueennyxie";
-//const char* HTTP_LEFT = "http://192.168.0.15:8090/lhand";
-//const char* HTTP_RIGHT = "http://192.168.0.15:8090/rhand";
-}
+const char* NETWORK;
+const char* PASSWORD;
+const char* HTTP_LEFT;
+const char* HTTP_RIGHT;
 
 float *values = new float[4]; //4 ints representing actuators in the order {INDEX, LEFT, WRIST, RIGHT}
 HTTPClient http;
@@ -53,25 +43,44 @@ void setup() {
     Serial.flush();
     delay(1000);
   }
+
+  setupWifi();
+}
+
+void setupWifi(){
+  //if using local network
+  if(LOCAL_NETWORK == true) {
+    NETWORK = "ALTIMA_MESH-F19FC8";
+    PASSWORD = "92f19fc8";
+    HTTP_LEFT = "http://192.168.11.2:8090/lhand";
+    HTTP_RIGHT = "http://192.168.11.2:8090/rhand";
+  }
+  else{ //// if using home network
+    NETWORK = "THE DANGER ZONE";
+    PASSWORD = "allhailqueennyxie";
+    HTTP_LEFT = "http://192.168.0.15:8090/lhand";
+    HTTP_RIGHT = "http://192.168.0.15:8090/rhand";
+  }
+  
   WiFi.mode(WIFI_STA);
   WiFiMulti.addAP(NETWORK, PASSWORD);
 }
 
 void getWifiConnection(){
   const char* httpHand;
-  if(LEFT){ //left hand
+  if(LEFT_HAND == true){ //left hand
     httpHand = HTTP_LEFT;
   }
   else { //right hand
     httpHand = HTTP_RIGHT;
   }
 
-  if ((WiFiMulti.run() == WL_CONNECTED)) {
+  if (WiFiMulti.run() == WL_CONNECTED) {
 
     WiFiClient client;
 
     Serial.print("[HTTP] begin...\n");
-    if (LEFT && http.begin(client, httpHand)) {
+    if (http.begin(client, httpHand)) {
 
       for (size_t i = 0; i < 3; i++) {
         Serial.printf("[HTTP] GET (%d)...\n", i+1);
@@ -258,7 +267,7 @@ void loop() {
     values = splitInstructions(getInstructions(), values);
   
     //order is always {INDEX, LEFT, WRIST, RIGHT}
-    if(TWO_ACTS){
+    if(TWO_ACTUATORS){
       activate2Actuators(values);
     }
     else {
