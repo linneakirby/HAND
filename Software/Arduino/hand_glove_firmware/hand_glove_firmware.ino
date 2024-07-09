@@ -12,16 +12,25 @@
 
 ESP8266WiFiMulti WiFiMulti;
 
-//// if using home network
-//const char* NETWORK = "THE DANGER ZONE";
-//const char* PASSWORD = "allhailqueennyxie";
-//const char* HTTP = "http://192.168.0.15:8090/hand";
+//CHANGEABLE VARIABLES
+const bool LEFT = true;
+const bool LOCAL = true;
+const bool TWO_ACTS = true;
 
 
 //if using local network
-const char* NETWORK = "ALTIMA_MESH-F19FC8";
-const char* PASSWORD = "92f19fc8";
-const char* HTTP = "http://192.168.11.2:8090/hand";
+if(LOCAL) {
+  const char* NETWORK = "ALTIMA_MESH-F19FC8";
+  const char* PASSWORD = "92f19fc8";
+  const char* HTTP_LEFT = "http://192.168.11.2:8090/lhand";
+  const char* HTTP_RIGHT = "http://192.168.11.2:8090/rhand";
+}
+else{ //// if using home network
+//const char* NETWORK = "THE DANGER ZONE";
+//const char* PASSWORD = "allhailqueennyxie";
+//const char* HTTP_LEFT = "http://192.168.0.15:8090/lhand";
+//const char* HTTP_RIGHT = "http://192.168.0.15:8090/rhand";
+}
 
 float *values = new float[4]; //4 ints representing actuators in the order {INDEX, LEFT, WRIST, RIGHT}
 HTTPClient http;
@@ -49,12 +58,20 @@ void setup() {
 }
 
 void getWifiConnection(){
+  const char* httpHand;
+  if(LEFT){ //left hand
+    httpHand = HTTP_LEFT;
+  }
+  else { //right hand
+    httpHand = HTTP_RIGHT;
+  }
+
   if ((WiFiMulti.run() == WL_CONNECTED)) {
 
     WiFiClient client;
 
     Serial.print("[HTTP] begin...\n");
-    if (http.begin(client, HTTP)) {  // HTTP
+    if (LEFT && http.begin(client, httpHand)) {
 
       for (size_t i = 0; i < 3; i++) {
         Serial.printf("[HTTP] GET (%d)...\n", i+1);
@@ -150,22 +167,36 @@ void pulseActuator(int actuator){
 //pulse an actuator according to intensity
 void activateActuator(int actuator, float intensity=HIGH){
   //Serial.println("activating pin " + String(actuator));
-  if(intensity > 0.66){ //highest intensity
-    pulseActuator(actuator);
-    pulseActuator(actuator);
-    pulseActuator(actuator);
+  // if(intensity > 0.66){ //highest intensity
+  //   pulseActuator(actuator);
+  //   pulseActuator(actuator);
+  //   pulseActuator(actuator);
+  // }
+  // else if(intensity > 0.33){ //mid intensity
+  //   pulseActuator(actuator);
+  //   pulseActuator(actuator);
+  // }
+  // else{ //low intensity
+  //   pulseActuator(actuator);
+  // }
+  pulseActuator(actuator);
+  pulseActuator(actuator);
+  pulseActuator(actuator);
+}
+
+//2 actuators
+void activate2Actuators(float *v){
+  if (values[0] > 0){// index
+    activateActuator(convertSymbolToPin('i'), values[0]);
   }
-  else if(intensity > 0.33){ //mid intensity
-    pulseActuator(actuator);
-    pulseActuator(actuator);
-  }
-  else{ //low intensity
-    pulseActuator(actuator);
+  if (values[2] > 0){// wrist
+    activateActuator(convertSymbolToPin('w'), values[2]);
   }
 }
 
+//4 actuators
 //activate desired actuators in series
-void activateActuators(float *v){
+void activate4Actuators(float *v){
   if (values[0] > 0){
     if (values[1] > 0){ // index/left pair
       if(values[0] > values[1]){ //more index
@@ -227,6 +258,12 @@ void loop() {
     values = splitInstructions(getInstructions(), values);
   
     //order is always {INDEX, LEFT, WRIST, RIGHT}
-    activateActuators(values);
+    if(TWO_ACTS){
+      activate2Actuators(values);
+    }
+    else {
+      activate4Actuators(values);
+    }
+    
   }
 }
