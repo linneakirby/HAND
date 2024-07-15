@@ -58,8 +58,51 @@ def create_vector(start, end):
 def get_filepath():
     return './Results/correction_'+datetime.datetime.now().strftime("%d/%m/%Y-%H:%M:%S")+'.png'
 
-def generate_scatter_plot(kmeans, coords_only, rcop, lcop, ideal_cop, actual_cop, figure, ax, r=ROW_SIZE, c=COL_SIZE, fp=get_filepath()):
+def get_palette(name):
+    if(name == "color"):
+        return {
+            "label_edge": 'gray',
+            "label0_color": '#cea2fd',
+            "label1_color": '#ffb07c',
+            "rcop_color": '#fc824a',
+            "lcop_color": '#5d21d0',
+            "icop_color": 'lime',
+            "ccop_color": '#fedf08',
+            "cop_edge": 'black',
+            "vector_color": 'red',
+            "vector_edge": 'black'
+        }
+    elif(name == "bw"):
+        return {
+            "label_edge": '#cccccc',
+            "label0_color": '#dddddd',
+            "label1_color": '#dddddd',
+            "rcop_color": '#767676',
+            "lcop_color": '#767676',
+            "icop_color": '#767676',
+            "ccop_color": '#767676',
+            "cop_edge": '#474545',
+            "vector_color": 'black',
+            "vector_edge": 'white'
+        }
+    else:
+        return {
+            "label_edge": 'gray',
+            "label0_color": '#cea2fd',
+            "label1_color": '#ffb07c',
+            "rcop_color": '#fc824a',
+            "lcop_color": '#5d21d0',
+            "icop_color": 'lime',
+            "ccop_color": '#fedf08',
+            "cop_edge": 'black',
+            "vector_color": 'red',
+            "vector_edge": 'black'
+        }
+
+def generate_scatter_plot(kmeans, coords_only, rcop, lcop, ideal_cop, actual_cop, figure, ax, r=ROW_SIZE, c=COL_SIZE, fp=get_filepath(), p="color"):
     ax.invert_yaxis()
+
+    palette = get_palette(p)
 
     index = 0
     for x in range(c): #x
@@ -69,43 +112,43 @@ def generate_scatter_plot(kmeans, coords_only, rcop, lcop, ideal_cop, actual_cop
                 if kmeans.labels_[index] == 0:
                     plt.scatter(
                         x, y,
-                        s=40, c='#cea2fd',
-                        marker='^', edgecolor='gray'
+                        s=40, c=palette.get("label0_color"),
+                        marker='^', edgecolor=palette.get("label_edge")
                     )
                 if kmeans.labels_[index] == 1:
                     plt.scatter(
                         x, y,
-                        s=40, c='#ffb07c',
-                        marker='v', edgecolor='gray'
+                        s=40, c=palette.get("label1_color"),
+                        marker='v', edgecolor=palette.get("label_edge")
                     )
                 index+=1
 
     # add center of pressure markers
     plt.scatter(
         rcop[0], rcop[1],
-        s=60, c='#fc824a',
-        marker='>', edgecolor='black', label='right CoP'
+        s=60, c=palette.get("rcop_color"),
+        marker='>', edgecolor=palette.get("cop_edge"), label='right CoP'
         )
     plt.scatter(
         lcop[0], lcop[1],
-        s=60, c='#5d21d0',
-        marker='<', edgecolor='black', label='left CoP'
+        s=60, c=palette.get("lcop_color"),
+        marker='<', edgecolor=palette.get("cop_edge"), label='left CoP'
         )
     plt.scatter(
         ideal_cop[0], ideal_cop[1],
-        s=60, c='lime',
-        marker='X', edgecolor='black', label='ideal CoP'
+        s=60, c=palette.get("icop_color"),
+        marker='X', edgecolor=palette.get("cop_edge"), label='ideal CoP'
         )
     plt.scatter(
         actual_cop[0], actual_cop[1],
-        s=60, c='#fedf08',
-        marker='P', edgecolor='black', label='current CoP'
+        s=60, c=palette.get("ccop_color"),
+        marker='P', edgecolor=palette.get("cop_edge"), label='current CoP'
         )
 
     # add vector
     dx = ideal_cop[0] - actual_cop[0]
     dy = ideal_cop[1] - actual_cop[1]
-    plt.arrow(actual_cop[0], actual_cop[1], dx, dy, facecolor = "red", edgecolor = "black", length_includes_head=True, head_width = 1, width= .3)
+    plt.arrow(actual_cop[0], actual_cop[1], dx, dy, facecolor=palette.get("vector_color"), edgecolor=palette.get("vector_edge"), length_includes_head=True, head_width = 1, width= .3)
 
     # add legend
     ax.legend()

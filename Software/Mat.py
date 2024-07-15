@@ -3,6 +3,7 @@ import sys
 
 # Third-party libraries
 import numpy as np
+import matplotlib.pyplot as plt
 import serial.tools.list_ports
 np.set_printoptions(threshold=sys.maxsize)
 
@@ -82,6 +83,25 @@ class Mat:
             print(tmp)
         print("\n")
 
+    def plotMatrix(self, c=COLS, r=ROWS):
+        tmparray = np.zeros((r, c))
+        for x in range(c): #x
+            tmp = ""
+            for y in range(r): #y
+                tmp = int(self.Values[x][y])
+                tmparray[x][y] = tmp
+        self.generatePlot(tmparray)
+
+    def generatePlot(Z, fp=FIG_PATH):
+        plt.ion()
+        fig, ax = plt.subplots(figsize=(5,5))
+
+        ax.contourf(np.arange(0, ROWS), np.arange(0, COLS), Z, levels=7, cmap="nipy_spectral")
+
+        plt.draw()
+        plt.savefig(fp)
+        plt.pause(0.0001)
+        plt.clf()
 
     def __str__(self):
         s = ""

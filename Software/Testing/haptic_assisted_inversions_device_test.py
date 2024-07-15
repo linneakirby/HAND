@@ -16,6 +16,7 @@ from Mat import Mat
 from Hands import *
 import hand_utils
 import haptic_assisted_inversions_device as hand
+import Software.Testing.HAND_gui as hg
 
 class Haptic_Assisted_Inversions_Device_Mat_Test(unittest.TestCase):
 
@@ -200,7 +201,7 @@ class Haptic_Assisted_Inversions_Device_Mat_Test(unittest.TestCase):
         sample_file_name = results_dir+'test'
         #sample_file_name = results_dir+'correction_'+datetime.datetime.now().strftime("%d/%m/%Y-%H:%M:%S")+'.png'
 
-        hand_utils.generate_scatter_plot(h.kmeans, h.coords_only, h.get_right_hand().get_cop(), h.get_left_hand().get_cop(), h.get_ideal_cop(), h.get_cop(), figure, ax, fp=sample_file_name)
+        hand_utils.generate_scatter_plot(h.kmeans, h.coords_only, h.get_right_hand().get_cop(), h.get_left_hand().get_cop(), h.get_ideal_cop(), h.get_cop(), figure, ax, fp=sample_file_name, p="bw")
         plt.show()
 
         #print(actuators)
@@ -239,7 +240,6 @@ class Haptic_Assisted_Inversions_Device_Mat_Test(unittest.TestCase):
         print("response: ", response.get_data(as_text=True))
         assert response.status_code == 200
         assert "1.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 " == response.get_data(as_text=True)
-
 
 if __name__ == '__main__':
     unittest.main()

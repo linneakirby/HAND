@@ -17,6 +17,7 @@ from flask import Flask
 ROWS = 48  # Rows of the sensor
 COLS = 48  # Columns of the sensor
 DEFAULT_PORT = '/dev/cu.usbmodem104742601'
+CONTOUR = False
 
 def create_app(data = None):
     app = Flask(__name__)
@@ -47,6 +48,8 @@ def sendDataToArduinoHelper(data):
         data.get_matrix()
         print(data)
         a = process_mat_data(data.Values)
+        if CONTOUR:
+            data.plotMatrix()
     return a
 
 # process both hands
