@@ -36,6 +36,7 @@ def create_app(data = None):
     def hand():
         return sendDataToArduino(data)
         
+    #data.printMatrix()
     return app, data
 
 def sendDataToArduinoHelper(data):

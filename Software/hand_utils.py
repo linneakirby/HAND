@@ -20,6 +20,8 @@ def get_port():
     print("Getting ports")
     ports = list(serial.tools.list_ports.grep("\/dev\/cu.usbmodem[0-9]{9}"))
     if (ports):
+        print("Using port ")
+        print(ports[0])
         return ports[0].device
     return None
 
