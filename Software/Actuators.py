@@ -89,6 +89,26 @@ class Actuator_manager:
         s = s + str(self.r_right) + " " #add right hand right actuator
         return s
     
+    def get_actuator_list_4(self):
+        l = list()
+        l.append(self.l_index.get_magnitude())
+        l.append(self.l_left.get_magnitude())
+        l.append(self.l_wrist.get_magnitude())
+        l.append(self.l_right.get_magnitude())
+        l.append(self.r_index.get_magnitude())
+        l.append(self.r_left.get_magnitude())
+        l.append(self.r_wrist.get_magnitude())
+        l.append(self.r_right.get_magnitude())
+        return l
+    
+    def get_actuator_list_2(self):
+        l = list()
+        l.append(self.l_index.get_magnitude())
+        l.append(self.l_wrist.get_magnitude())
+        l.append(self.r_index.get_magnitude())
+        l.append(self.r_wrist.get_magnitude())
+        return l
+    
 
 
 ############# ACTIVATE ACTUATORS #############
