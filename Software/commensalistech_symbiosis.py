@@ -62,7 +62,7 @@ def process_mat_data(d):
         h.isolate_hands(d)
         h.generate_cops()
         h.find_correction_vector()
-        print(f"CoP: {h.cop} - ideal {h.ideal_cop}")
+        #print(f"CoP: {h.cop} - ideal {h.ideal_cop}")
         h.select_actuators()
     return h.get_actuators(), h.get_cop()
 
@@ -104,7 +104,15 @@ if __name__ == "__main__":
 
   hands_array = np.load(os.getcwd() + "/Testing/hands_rot.npy")
   data = get_mat_data(hands_array)
-  a, c = process_data(data)
-  instructions = compile_instructions(c, a)
-  print(instructions)
-  send_instructions(client, instructions)
+
+  print("Ctrl+C to exit")
+  try:
+    while(True):
+      data = get_mat_data(hands_array)
+      a, c = process_data(data)
+      instructions = compile_instructions(c, a)
+      print(instructions)
+      time.sleep(1)
+      send_instructions(client, instructions)
+  except KeyboardInterrupt:
+    print("\nProgram terminated by user.")

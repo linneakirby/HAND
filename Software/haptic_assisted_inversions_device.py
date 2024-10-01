@@ -73,7 +73,7 @@ def process_mat_data(d):
         h.isolate_hands(d)
         h.generate_cops()
         h.find_correction_vector()
-        print(f"CoP: {h.cop} - ideal {h.ideal_cop}")
+        #print(f"CoP: {h.cop} - ideal {h.ideal_cop}")
         h.select_actuators()
     #return actuators
     return h.get_actuators()
