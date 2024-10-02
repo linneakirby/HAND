@@ -61,8 +61,8 @@ class Commensalistech_Symbiosis_Test(unittest.TestCase):
 
         h = Hands()
         h.run_kmeans(hands_array)
-        h.isolate_hands(hands_array)
-        h.generate_cops()
+        h1_bounds, h2_bounds = h.isolate_hands(hands_array)
+        h.generate_cops(h1_bounds, h2_bounds)
         h.find_correction_vector()
         h.select_actuators()
 

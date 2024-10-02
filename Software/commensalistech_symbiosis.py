@@ -59,8 +59,8 @@ def process_mat_data(d):
     h = Hands()
     if np.any(d):
         h.run_kmeans(d)
-        h.isolate_hands(d)
-        h.generate_cops()
+        h1_bounds, h2_bounds = h.isolate_hands(d)
+        h.generate_cops(h1_bounds, h2_bounds)
         h.find_correction_vector()
         #print(f"CoP: {h.cop} - ideal {h.ideal_cop}")
         h.select_actuators()

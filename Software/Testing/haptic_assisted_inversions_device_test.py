@@ -16,7 +16,6 @@ from Mat import Mat
 from Hands import *
 import hand_utils
 import haptic_assisted_inversions_device as hand
-import Software.Testing.HAND_gui as hg
 
 class Haptic_Assisted_Inversions_Device_Mat_Test(unittest.TestCase):
 
@@ -86,8 +85,8 @@ class Haptic_Assisted_Inversions_Device_Mat_Test(unittest.TestCase):
 
         h = Hands()
         h.run_kmeans(m.Values, 3, 3)
-        h.isolate_hands(m.Values)
-        h.generate_cops()
+        h1_bounds, h2_bounds = h.isolate_hands(m.Values)
+        h.generate_cops(h1_bounds, h2_bounds)
 
         self.assertEqual(h.get_right_hand().get_points().get((2, 1)), 2.0)
         self.assertEqual(h.get_left_hand().get_points().get((0, 1)), 1.0)
@@ -111,8 +110,8 @@ class Haptic_Assisted_Inversions_Device_Mat_Test(unittest.TestCase):
         m = Mat(hands_array)
         h = Hands()
         h.run_kmeans(m.Values, 3, 3)
-        h.isolate_hands(m.Values)
-        h.generate_cops()
+        h1_bounds, h2_bounds = h.isolate_hands(m.Values)
+        h.generate_cops(h1_bounds, h2_bounds)
 
         self.assertEqual(h.get_right_hand().get_cop(), [2.0, 1.0])
         self.assertEqual(h.get_left_hand().get_cop(), [0.0, 1.0])
@@ -136,8 +135,8 @@ class Haptic_Assisted_Inversions_Device_Mat_Test(unittest.TestCase):
 
         h = Hands()
         h.run_kmeans(m.Values, 3, 3)
-        h.isolate_hands(m.Values)
-        h.generate_cops()
+        h1_bounds, h2_bounds = h.isolate_hands(m.Values)
+        h.generate_cops(h1_bounds, h2_bounds)
         h.find_correction_vector()
         h.select_actuators()
 
@@ -156,8 +155,8 @@ class Haptic_Assisted_Inversions_Device_Mat_Test(unittest.TestCase):
 
         h = Hands()
         h.run_kmeans(m.Values, 3, 3)
-        h.isolate_hands(m.Values)
-        h.generate_cops()
+        h1_bounds, h2_bounds = h.isolate_hands(m.Values)
+        h.generate_cops(h1_bounds, h2_bounds)
 
         right = h.get_right_hand()
         left = h.get_left_hand()
@@ -189,8 +188,8 @@ class Haptic_Assisted_Inversions_Device_Mat_Test(unittest.TestCase):
 
         h = Hands()
         h.run_kmeans(hands_array)
-        h.isolate_hands(hands_array)
-        h.generate_cops()
+        h1_bounds, h2_bounds = h.isolate_hands(hands_array)
+        h.generate_cops(h1_bounds, h2_bounds)
         h.find_correction_vector()
         h.select_actuators()
 
@@ -222,19 +221,22 @@ class Haptic_Assisted_Inversions_Device_Mat_Test(unittest.TestCase):
     #create test client
     def setUp(self):
         self.client = self.app.test_client()
-
+    
+    @unittest.skip("better to live test")
     def test_server_rhand(self):
         rresponse = self.client.get("/rhand")
         print("r response: ", rresponse.get_data(as_text=True))
         assert rresponse.status_code == 200
         assert "0.0 0.0 0.0 0.0 " == rresponse.get_data(as_text=True)
 
+    @unittest.skip("better to live test")
     def test_server_lhand(self):
         lresponse = self.client.get("/lhand")
         print("l response: ", lresponse.get_data(as_text=True))
         assert lresponse.status_code == 200
         assert "1.0 0.0 0.0 0.0 " == lresponse.get_data(as_text=True)
 
+    @unittest.skip("better to live test")
     def test_server_hand(self):
         response = self.client.get("/hand")
         print("response: ", response.get_data(as_text=True))

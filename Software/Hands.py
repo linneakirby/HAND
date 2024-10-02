@@ -22,6 +22,7 @@ class Hand:
         self.right = False
         self.left = False
         self.cop = [0, 0]
+        self.bounds = dict()
         self.points = dict()
 
     def is_right(self):
@@ -30,15 +31,17 @@ class Hand:
     def is_left(self):
         return self.left
     
-    def set_right(self, c=[0, 0]):
+    def set_right(self, c=[0, 0], b=None):
         self.right = True
         self.left = False
         self.cop = c
+        self.bounds = b
 
-    def set_left(self, c=[0 ,0]):
+    def set_left(self, c=[0 ,0], b=None):
         self.right = False
         self.left = True
         self.cop = c
+        self.bounds = b
     
     def get_cop(self):
         return self.cop
@@ -54,6 +57,9 @@ class Hand:
 
     def get_points(self):
         return self.points
+    
+    def get_bounds(self):
+        return self.bounds
 
 class Hands:
     def __init__(self, clusters=2):
@@ -87,12 +93,30 @@ class Hands:
 
         return self.kmeans.fit(self.coords_only), self.coords_only
     
+    # updates a hand's bounds with new point information
+    def adjust_bounds(self, bounds, point, value):
+        max_x = bounds.setdefault("max x", (point, value))[0][0]
+        min_x = bounds.setdefault("min x", (point, value))[0][0]
+        max_y = bounds.setdefault("max y", (point, value))[0][1]
+        min_y = bounds.setdefault("min x", (point, value))[0][1]
+
+        if (point[0] > max_x):
+            bounds.update({"max x": (point, value)})
+        if (point[0] < min_x):
+            bounds.update({"min x": (point, value)})
+        if (point[1] > max_y):
+            bounds.update({"max y": (point, value)})
+        if (point[0] > min_y):
+            bounds.update({"min y": (point, value)})
+
     # isolates and separates hands
     # note that hands are UNORDERED
     def isolate_hands(self, Z):
         index = 0
         h1_index = 0
         h2_index = 0
+        h1_bounds = dict()
+        h2_bounds = dict()
         for x in range(COL_SIZE):
             for y in range(ROW_SIZE):
                 #print("Looking at: ", x, ",",y)
@@ -100,26 +124,29 @@ class Hands:
                     if (self.kmeans.labels_[index] == 0): #h1
                         #print("Adding to h1\nkey: ", x, ",", y, "\nvalue: ", Z[y][x])
                         self.h1.add_point((x, y), Z[y][x])
+                        self.adjust_bounds(h1_bounds, (x, y), Z[y][x])
                         h1_index+=1
                     if (self.kmeans.labels_[index] == 1): #h2
                         #print("Adding to h2\nkey: ", x, ",", y, "\nvalue: ", Z[y][x])
                         self.h2.add_point((x, y), Z[y][x])
+                        self.adjust_bounds(h2_bounds, (x, y), Z[y][x])
                         h2_index+=1
                     index+=1
+        return h1_bounds, h2_bounds
 
     
-    def generate_cops(self):
+    def generate_cops(self, h1_bounds, h2_bounds):
         cop1 = hand_utils.calculate_cop(self.h1.get_points())
         cop2 = hand_utils.calculate_cop(self.h2.get_points())
 
         if(cop1[0] < cop2[0]): #h1 is left hand
-            self.h2.set_right(cop2)
-            self.h1.set_left(cop1)
+            self.h2.set_right(cop2, h2_bounds)
+            self.h1.set_left(cop1, h1_bounds)
         
         #otherwise h1 is right hand
         else:
-            self.h1.set_right(cop1)
-            self.h2.set_left(cop2)
+            self.h1.set_right(cop1, h1_bounds)
+            self.h2.set_left(cop2, h2_bounds)
 
         both_hands = dict()
         both_hands.update(self.h1.get_points())
