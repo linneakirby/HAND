@@ -64,7 +64,7 @@ def process_mat_data(d):
         h.find_correction_vector()
         #print(f"CoP: {h.cop} - ideal {h.ideal_cop}")
         h.select_actuators()
-    return h.get_actuators(), h.get_cop()
+    return h.get_actuators(), h.get_correction_vector()
 
 def process_data_helper(data):
     #if data is just mat values snapshot
@@ -75,15 +75,15 @@ def process_data_helper(data):
     if isinstance(data, Mat):
       data.get_matrix()
       #print(data)
-      a, c = process_mat_data(data.Values)
+      actuators, vector = process_mat_data(data.Values)
       if CONTOUR:
           data.plotMatrix()
-      return a, c
+      return actuators, vector
 
 # process both hands
 def process_data(data):
-  a, c = process_data_helper(data)
-  return a.get_actuator_list_2(), c
+  actuators, vector = process_data_helper(data)
+  return actuators.get_actuator_list_2(), vector
 
 def get_mat_data(data = None):
   if data is None: #if no mat values provided
@@ -109,8 +109,8 @@ if __name__ == "__main__":
   try:
     while(True):
       data = get_mat_data(hands_array)
-      a, c = process_data(data)
-      instructions = compile_instructions(c, a)
+      actuators, vector = process_data(data)
+      instructions = compile_instructions(vector, actuators)
       print(instructions)
       time.sleep(1)
       send_instructions(client, instructions)
