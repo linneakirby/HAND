@@ -19,6 +19,21 @@ import commensalistech_symbiosis as techbio
 
 class Commensalistech_Symbiosis_Test(unittest.TestCase):
 
+    # @unittest.skip("targeting one test")
+    def test_hand_boundaries(self):
+        hands_array = np.load(os.getcwd() + "/hands_rot.npy")
+        m = Mat(hands_array)
+
+        h = Hands()
+        h.run_kmeans(hands_array)
+        h1_bounds, h2_bounds = h.isolate_hands(hands_array)
+        h.generate_cops(h1_bounds, h2_bounds)
+        h.find_correction_vector()
+        h.select_actuators()
+
+        #print("left hand boundaries: ", h.get_left_hand().get_bounds())
+        #print("right hand boundaries: ", h.get_right_hand().get_bounds())
+
     @unittest.skip("targeting one test")
     #make sure an entire loop runs properly
     def test_simple_sound_trigger(self):
@@ -50,32 +65,34 @@ class Commensalistech_Symbiosis_Test(unittest.TestCase):
         testlist2 = [.9, .2, .2, .4, .6, .9]
         techbio.send_instructions(client, testlist2)
     
-#    @unittest.skip("targeting one test")
-    def test_sound_trigger_integrated(self):  
+    @unittest.skip("targeting one test")
+    def test_sound_trigger_integrated_actuators(self):  
         args = techbio.create_args()
         client = udp_client.SimpleUDPClient(args.ip, args.port)
 
         hands_array = np.load(os.getcwd() + "/hands_rot.npy")
-        m = Mat(hands_array)
-        print(m)
+        data = techbio.get_mat_data(hands_array)
 
-        h = Hands()
-        h.run_kmeans(hands_array)
-        h1_bounds, h2_bounds = h.isolate_hands(hands_array)
-        h.generate_cops(h1_bounds, h2_bounds)
-        h.find_correction_vector()
-        h.select_actuators()
+        data = techbio.get_mat_data(hands_array)
+        actuators, vector = techbio.process_data(data)
+        instructions = techbio.compile_instructions(vector, actuators)
+        print(instructions)
+        time.sleep(1)
+        techbio.send_instructions(client, instructions)
 
-        #print(actuators)
+    # @unittest.skip("targeting one test")
+    def test_sound_trigger_integrated_bounds(self):  
+        args = techbio.create_args()
+        client = udp_client.SimpleUDPClient(args.ip, args.port)
 
-        self.assertFalse(h.get_actuators().get_r_index().is_on())
-        self.assertFalse(h.get_actuators().get_r_right().is_on())
-        self.assertFalse(h.get_actuators().get_r_wrist().is_on())
-        self.assertFalse(h.get_actuators().get_r_left().is_on())
-        self.assertTrue(h.get_actuators().get_l_index().is_on())
-        self.assertFalse(h.get_actuators().get_l_right().is_on())
-        self.assertFalse(h.get_actuators().get_l_wrist().is_on())
-        self.assertFalse(h.get_actuators().get_l_left().is_on())
+        hands_array = np.load(os.getcwd() + "/hands_rot.npy")
+        data = techbio.get_mat_data(hands_array)
+
+        data = techbio.get_mat_data(hands_array)
+        bounds, vector = techbio.process_data(data, 1)
+        instructions = techbio.compile_instructions(vector, bounds, True)
+        time.sleep(1)
+        techbio.send_instructions(client, instructions)
 
 if __name__ == '__main__':
     unittest.main()

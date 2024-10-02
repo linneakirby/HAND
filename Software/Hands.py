@@ -248,4 +248,18 @@ class Hands:
     
     def get_actuators(self):
         return self.actuators
+    
+    def compile_bounds(self):
+        bounds = list()
+        bounds.append(self.get_left_hand().get_bounds().get("max x"))
+        bounds.append(self.get_left_hand().get_bounds().get("min x"))
+        bounds.append(self.get_left_hand().get_bounds().get("max y"))
+        bounds.append(self.get_left_hand().get_bounds().get("min y"))
+        bounds.append(self.get_right_hand().get_bounds().get("max x"))
+        bounds.append(self.get_right_hand().get_bounds().get("min x"))
+        bounds.append(self.get_right_hand().get_bounds().get("max y"))
+        bounds.append(self.get_right_hand().get_bounds().get("min y"))
+        return bounds
 
+    def get_bounds(self):
+        return self.compile_bounds()

@@ -55,7 +55,7 @@ def add_instruction(i_list, i):
   p.append(i)
   return p
 
-def process_mat_data(d):
+def process_mat_data(d, ret_type=0):
     h = Hands()
     if np.any(d):
         h.run_kmeans(d)
@@ -64,37 +64,50 @@ def process_mat_data(d):
         h.find_correction_vector()
         #print(f"CoP: {h.cop} - ideal {h.ideal_cop}")
         h.select_actuators()
+    if(ret_type == 1):
+       #print("returning hand boundaries")
+       return h.get_bounds(), h.get_correction_vector()
+    #print("returning actuator values")
     return h.get_actuators(), h.get_correction_vector()
 
-def process_data_helper(data):
+def process_data_helper(data, ret_type=0):
     #if data is just mat values snapshot
     # used for testing without Mat object
     if isinstance(data, np.ndarray):
-      return process_mat_data(data)
+      return process_mat_data(data, ret_type)
     #if data is a Mat object -> used for normal HAND behavior
     if isinstance(data, Mat):
       data.get_matrix()
       #print(data)
-      actuators, vector = process_mat_data(data.Values)
+      values, vector = process_mat_data(data.Values, ret_type)
       if CONTOUR:
           data.plotMatrix()
-      return actuators, vector
+      return values, vector
 
 # process both hands
-def process_data(data):
-  actuators, vector = process_data_helper(data)
-  return actuators.get_actuator_list_2(), vector
+def process_data(data, ret_type=0):
+  values, vector = process_data_helper(data, ret_type)
+  if(ret_type == 1): #returning hand boundaries
+    #print("RETURNING HAND BOUNDARIES")
+    return values, vector
+  # otherwise must be returning actuators
+  #print("RETURNING ACTUATORS")
+  return values.get_actuator_list_2(), vector
 
 def get_mat_data(data = None):
   if data is None: #if no mat values provided
       data = Mat(hand_utils.get_port())
   return data
 
-def compile_instructions(list1, list2):
+def compile_instructions(list1, list2, list2_is_point_pressure_values=False):
   ret = copy_list(list1)
 
-  for item in list2:
-      ret.append(item)
+  if (list2_is_point_pressure_values):
+     for item in list2:
+        ret.append(float(item[1]))
+  else:
+    for item in list2:
+        ret.append(item)
 
   return ret
 
