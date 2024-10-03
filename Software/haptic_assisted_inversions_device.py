@@ -18,6 +18,7 @@ from flask import Flask
 ROWS = 48  # Rows of the sensor
 COLS = 48  # Columns of the sensor
 DEFAULT_PORT = '/dev/cu.usbmodem104742601'
+DEFAULT_FOLDER = './Results/Sequence'+str(time.time_ns())
 CONTOUR = False
 TEST = True
 
@@ -52,7 +53,9 @@ def sendDataToArduinoHelper(data):
         print(data)
         a = process_mat_data(data.Values)
         if CONTOUR:
-            data.plotMatrix('./Results/Sequence/contour'+str(time.time_ns())+'.png')
+            if not os.path.exists(DEFAULT_FOLDER):
+                os.makedirs(DEFAULT_FOLDER)
+            data.plotMatrix(fp=DEFAULT_FOLDER+'/contour'+str(time.time_ns())+'.png')
     return a
 
 # process both hands

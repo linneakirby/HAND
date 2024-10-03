@@ -17,6 +17,9 @@ from Hands import *
 import hand_utils
 import haptic_assisted_inversions_device as hand
 
+DEFAULT_FOLDER = './Results/Sequence'+str(time.time_ns())
+
+
 class Haptic_Assisted_Inversions_Device_Mat_Test(unittest.TestCase):
     
     # @unittest.skip("targeting one test")
@@ -228,13 +231,14 @@ class Haptic_Assisted_Inversions_Device_Mat_Test(unittest.TestCase):
         self.assertFalse(h.get_actuators().get_l_wrist().is_on())
         self.assertFalse(h.get_actuators().get_l_left().is_on())
 
+    #make sure sequences of contour plots can save
     def test_contour_plot(self):
         hands_array = np.load(os.getcwd() + "/hands_rot.npy")
         m = Mat(hands_array)
         for i in range(3):
-            fp='./Results/Sequence/contour'+str(time.time_ns())+'.png'
-            m.plotMatrix(fp=fp)
-
+            if not os.path.exists(DEFAULT_FOLDER):
+                os.makedirs(DEFAULT_FOLDER)
+            m.plotMatrix(fp=DEFAULT_FOLDER+'/contour'+str(time.time_ns())+'.png')
 
     ### SERVER TESTS BELOW ###
     hands_array = np.load(os.getcwd() + "/hands_rot.npy")
