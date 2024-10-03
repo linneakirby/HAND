@@ -73,12 +73,63 @@ class Commensalistech_Symbiosis_Test(unittest.TestCase):
         hands_array = np.load(os.getcwd() + "/hands_rot.npy")
         data = techbio.get_mat_data(hands_array)
 
-        data = techbio.get_mat_data(hands_array)
         actuators, vector = techbio.process_data(data)
         instructions = techbio.compile_instructions(vector, actuators)
         print(instructions)
         time.sleep(1)
         techbio.send_instructions(client, instructions)
+
+    @unittest.skip("targeting one test")
+    def test_sound_trigger_integrated_bounds(self):  
+        args = techbio.create_args()
+        client = udp_client.SimpleUDPClient(args.ip, args.port)
+
+        hands_array = np.load(os.getcwd() + "/hands_rot.npy")
+        data = techbio.get_mat_data(hands_array)
+
+        bounds, vector = techbio.process_data(data, 1)
+        instructions = techbio.compile_instructions(vector, bounds, True)
+        time.sleep(1)
+        techbio.send_instructions(client, instructions)
+
+    @unittest.skip("targeting one test")
+    def test_sound_trigger_both_bounds(self):  
+        args = techbio.create_args()
+        client = udp_client.SimpleUDPClient(args.ip, args.port)
+
+        hands_array = np.load(os.getcwd() + "/hands_rot.npy")
+        data = techbio.get_mat_data(hands_array)
+
+        # using bounds
+        bounds, vector = techbio.process_data(data, 1)
+        instructions = techbio.compile_instructions(vector, bounds, True)
+        techbio.send_instructions(client, instructions)
+        
+        time.sleep(1)
+
+        # using actuators
+        actuators, vector = techbio.process_data(data)
+        instructions = techbio.compile_instructions(vector, actuators)
+        techbio.send_instructions(client, instructions)
+
+        time.sleep(1)
+
+    @unittest.skip("targeting one test")
+    def test_sound_trigger_integrated_actuators_loop(self):  
+        args = techbio.create_args()
+        client = udp_client.SimpleUDPClient(args.ip, args.port)
+
+        hands_array = np.load(os.getcwd() + "/hands_rot.npy")
+        data = techbio.get_mat_data(hands_array)
+
+        for a in range (5):
+            actuators, vector = techbio.process_data(data)
+            instructions = techbio.compile_instructions(vector, actuators)
+            for i in range (len(instructions)):
+                instructions[i] = instructions[i]+a
+            print(instructions)
+            techbio.send_instructions(client, instructions)
+            time.sleep(1)
 
     # @unittest.skip("targeting one test")
     def test_sound_trigger_integrated_bounds(self):  
@@ -88,11 +139,15 @@ class Commensalistech_Symbiosis_Test(unittest.TestCase):
         hands_array = np.load(os.getcwd() + "/hands_rot.npy")
         data = techbio.get_mat_data(hands_array)
 
-        data = techbio.get_mat_data(hands_array)
-        bounds, vector = techbio.process_data(data, 1)
-        instructions = techbio.compile_instructions(vector, bounds, True)
-        time.sleep(1)
-        techbio.send_instructions(client, instructions)
+        for a in range (5):
+            bounds, vector = techbio.process_data(data, 1)
+            instructions = techbio.compile_instructions(vector, bounds, True)
+            for i in range (len(instructions)):
+                    instructions[i] = instructions[i]+a
+            print(instructions)
+            techbio.send_instructions(client, instructions)
+            time.sleep(1)
+
 
 if __name__ == '__main__':
     unittest.main()
