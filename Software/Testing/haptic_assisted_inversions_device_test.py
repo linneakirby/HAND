@@ -17,7 +17,7 @@ from Hands import *
 import hand_utils
 import haptic_assisted_inversions_device as hand
 
-DEFAULT_FOLDER = './Results/Sequence'+str(time.time_ns())
+fp = './Results/Sequence'+str(time.time_ns())
 
 
 class Haptic_Assisted_Inversions_Device_Mat_Test(unittest.TestCase):
@@ -236,9 +236,34 @@ class Haptic_Assisted_Inversions_Device_Mat_Test(unittest.TestCase):
         hands_array = np.load(os.getcwd() + "/hands_rot.npy")
         m = Mat(hands_array)
         for i in range(3):
-            if not os.path.exists(DEFAULT_FOLDER):
-                os.makedirs(DEFAULT_FOLDER)
-            m.plotMatrix(fp=DEFAULT_FOLDER+'/contour'+str(time.time_ns())+'.png')
+            if not os.path.exists(fp):
+                os.makedirs(fp)
+            m.plotMatrix(fp=fp+'/contour'+str(time.time_ns())+'.png')
+
+    def test_save_data(self):
+        hands_array = np.load(os.getcwd() + "/hands_rot.npy")
+        m = Mat(hands_array)
+        filepath = './Results/TestFrame'+str(time.time_ns())
+
+        if not os.path.exists(filepath):
+            os.makedirs(filepath+'/plot')
+            os.makedirs(filepath+'/data')
+        m.plotMatrix(fp=filepath+'/plot/contour'+str(time.time_ns())+'.png')
+        np.save(filepath+'/data/data'+str(time.time_ns())+'.npy', m.Values)
+
+    def test_save_data_sequence(self):
+        hands_array = np.load(os.getcwd() + "/hands_rot.npy")
+        m = Mat(hands_array)
+
+        filepath = './Results/TestSequence'+str(time.time_ns())
+
+        if not os.path.exists(filepath):
+            os.makedirs(filepath+'/plot')
+            os.makedirs(filepath+'/data')
+        
+        for i in range(3):
+            m.plotMatrix(fp=filepath+'/plot/contour'+str(time.time_ns())+'.png')
+            np.save(filepath+'/data/data'+str(time.time_ns())+'.npy', m.Values)
 
     ### SERVER TESTS BELOW ###
     hands_array = np.load(os.getcwd() + "/hands_rot.npy")

@@ -19,7 +19,7 @@ ROWS = 48  # Rows of the sensor
 COLS = 48  # Columns of the sensor
 DEFAULT_PORT = '/dev/cu.usbmodem104742601'
 DEFAULT_FOLDER = './Results/Sequence'+str(time.time_ns())
-CONTOUR = False
+SAVE_SEQUENCE = False
 TEST = True
 
 def create_app(data = None):
@@ -52,10 +52,12 @@ def sendDataToArduinoHelper(data):
         data.get_matrix()
         print(data)
         a = process_mat_data(data.Values)
-        if CONTOUR:
+        if SAVE_SEQUENCE:
             if not os.path.exists(DEFAULT_FOLDER):
-                os.makedirs(DEFAULT_FOLDER)
-            data.plotMatrix(fp=DEFAULT_FOLDER+'/contour'+str(time.time_ns())+'.png')
+                os.makedirs(DEFAULT_FOLDER+'/plot')
+                os.makedirs(DEFAULT_FOLDER+'/data')
+            data.plotMatrix(fp=DEFAULT_FOLDER+'/plot/contour'+str(time.time_ns())+'.png')
+            np.save(DEFAULT_FOLDER+'/data/data'+str(time.time_ns())+'.npy', data.Values)
     return a
 
 # process both hands

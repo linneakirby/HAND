@@ -19,7 +19,7 @@ from pythonosc import udp_client
 # Default parameters
 ROWS = 48  # Rows of the sensor
 COLS = 48  # Columns of the sensor
-CONTOUR = True
+SAVE_SEQUENCE = False
 DEFAULT_FOLDER = './Results/Sequence'+str(time.time_ns())
 TEST = True
 DATATYPE = 0 # 0 = actuators, 1 = bounds
@@ -80,10 +80,12 @@ def process_data_helper(data, ret_type=0):
       data.get_matrix()
       #print(data)
       values, vector = process_mat_data(data.Values, ret_type)
-      if CONTOUR:
+      if SAVE_SEQUENCE:
         if not os.path.exists(DEFAULT_FOLDER):
-           os.makedirs(DEFAULT_FOLDER)
-        data.plotMatrix(fp=DEFAULT_FOLDER+'/contour'+str(time.time_ns())+'.png')
+          os.makedirs(DEFAULT_FOLDER+'/plot')
+          os.makedirs(DEFAULT_FOLDER+'/data')
+        data.plotMatrix(fp=DEFAULT_FOLDER+'/plot/contour'+str(time.time_ns())+'.png')
+        np.save(DEFAULT_FOLDER+'/data/data'+str(time.time_ns())+'.npy', data.Values)
       return values, vector
 
 # process both hands
