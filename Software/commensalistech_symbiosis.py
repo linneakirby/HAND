@@ -21,6 +21,7 @@ ROWS = 48  # Rows of the sensor
 COLS = 48  # Columns of the sensor
 CONTOUR = False
 TEST = True
+DATATYPE = 0 # 0 = actuators, 1 = bounds
 
 
 
@@ -81,11 +82,11 @@ def process_data_helper(data, ret_type=0):
       #print(data)
       values, vector = process_mat_data(data.Values, ret_type)
       if CONTOUR:
-          data.plotMatrix()
+        data.plotMatrix('./Results/Sequence/contour'+str(time.time_ns())+'.png')
       return values, vector
 
 # process both hands
-def process_data(data, ret_type=0):
+def process_data(data, ret_type=DATATYPE):
   values, vector = process_data_helper(data, ret_type)
   if(ret_type == 1): #returning hand boundaries
     #print("RETURNING HAND BOUNDARIES")
@@ -99,10 +100,10 @@ def get_mat_data(data = None):
       data = Mat(hand_utils.get_port())
   return data
 
-def compile_instructions(list1, list2, list2_is_point_pressure_values=False):
+def compile_instructions(list1, list2, list2_is_point_pressure_values=DATATYPE):
   ret = copy_list(list1)
 
-  if (list2_is_point_pressure_values):
+  if (list2_is_point_pressure_values == 1):
      for item in list2:
         ret.append(float(item[1]))
   else:
@@ -115,8 +116,8 @@ if __name__ == "__main__":
   args = create_args()
   client = udp_client.SimpleUDPClient(args.ip, args.port)
 
-  hands_array = np.load(os.getcwd() + "/Testing/hands_rot.npy")
   if(TEST):
+    hands_array = np.load(os.getcwd() + "/Testing/hands_rot.npy")
     data = get_mat_data(hands_array)
   else:
      data = get_mat_data()
@@ -129,8 +130,8 @@ if __name__ == "__main__":
         data = get_mat_data(hands_array)
       else:
          data = get_mat_data()
-      actuators, vector = process_data(data)
-      instructions = compile_instructions(vector, actuators)
+      values, vector = process_data(data, DATATYPE)
+      instructions = compile_instructions(vector, values, DATATYPE)
       print(instructions)
       send_instructions(client, instructions)
       time.sleep(1)

@@ -1,6 +1,7 @@
 # Standard libraries
 import sys
 import time
+import os
 
 # My libraries
 from Mat import *
@@ -18,6 +19,7 @@ ROWS = 48  # Rows of the sensor
 COLS = 48  # Columns of the sensor
 DEFAULT_PORT = '/dev/cu.usbmodem104742601'
 CONTOUR = False
+TEST = True
 
 def create_app(data = None):
     app = Flask(__name__)
@@ -50,7 +52,7 @@ def sendDataToArduinoHelper(data):
         print(data)
         a = process_mat_data(data.Values)
         if CONTOUR:
-            data.plotMatrix()
+            data.plotMatrix('./Results/Sequence/contour'+str(time.time_ns())+'.png')
     return a
 
 # process both hands
@@ -81,9 +83,18 @@ def process_mat_data(d):
 if __name__ == '__main__':
     print("Welcome to Haptic Assisted iNversions Device (HAND)")
     print("Ctrl+C to exit")
+
     try:
-        app, data = create_app()
-        app.run(host='0.0.0.0', port=8090, threaded=True)
-        # time.sleep(0.1) # not sure if server should sleep or if it should all be on the gloves' end
+        if(TEST):
+            hands_array = np.load(os.getcwd() + "/Testing/hands_rot.npy")
+            m = Mat(hands_array)
+            app, data = create_app(hands_array)
+            m.printMatrix()
+            m.plotMatrix()
+            app.run(host='0.0.0.0', port=8090, threaded=True)
+        else:
+            app, data = create_app()
+            app.run(host='0.0.0.0', port=8090, threaded=True)
+            # time.sleep(0.1) # not sure if server should sleep or if it should all be on the gloves' end
     except KeyboardInterrupt:
         print("\nProgram terminated by user.")

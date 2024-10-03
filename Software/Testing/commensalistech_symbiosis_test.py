@@ -73,8 +73,8 @@ class Commensalistech_Symbiosis_Test(unittest.TestCase):
         hands_array = np.load(os.getcwd() + "/hands_rot.npy")
         data = techbio.get_mat_data(hands_array)
 
-        actuators, vector = techbio.process_data(data)
-        instructions = techbio.compile_instructions(vector, actuators)
+        actuators, vector = techbio.process_data(data, 0)
+        instructions = techbio.compile_instructions(vector, actuators, 0)
         print(instructions)
         time.sleep(1)
         techbio.send_instructions(client, instructions)
@@ -88,28 +88,30 @@ class Commensalistech_Symbiosis_Test(unittest.TestCase):
         data = techbio.get_mat_data(hands_array)
 
         bounds, vector = techbio.process_data(data, 1)
-        instructions = techbio.compile_instructions(vector, bounds, True)
+        instructions = techbio.compile_instructions(vector, bounds, 1)
         time.sleep(1)
         techbio.send_instructions(client, instructions)
 
-    @unittest.skip("targeting one test")
-    def test_sound_trigger_both_bounds(self):  
+    # @unittest.skip("targeting one test")
+    def test_sound_trigger_both_value_types(self):  
         args = techbio.create_args()
         client = udp_client.SimpleUDPClient(args.ip, args.port)
+        b = 1
+        a = 0
 
         hands_array = np.load(os.getcwd() + "/hands_rot.npy")
         data = techbio.get_mat_data(hands_array)
 
         # using bounds
-        bounds, vector = techbio.process_data(data, 1)
-        instructions = techbio.compile_instructions(vector, bounds, True)
+        bounds, vector = techbio.process_data(data, b)
+        instructions = techbio.compile_instructions(vector, bounds, b)
         techbio.send_instructions(client, instructions)
         
         time.sleep(1)
 
         # using actuators
-        actuators, vector = techbio.process_data(data)
-        instructions = techbio.compile_instructions(vector, actuators)
+        actuators, vector = techbio.process_data(data, a)
+        instructions = techbio.compile_instructions(vector, actuators, a)
         techbio.send_instructions(client, instructions)
 
         time.sleep(1)
@@ -131,7 +133,7 @@ class Commensalistech_Symbiosis_Test(unittest.TestCase):
             techbio.send_instructions(client, instructions)
             time.sleep(1)
 
-    # @unittest.skip("targeting one test")
+    @unittest.skip("targeting one test")
     def test_sound_trigger_integrated_bounds(self):  
         args = techbio.create_args()
         client = udp_client.SimpleUDPClient(args.ip, args.port)
@@ -141,7 +143,7 @@ class Commensalistech_Symbiosis_Test(unittest.TestCase):
 
         for a in range (5):
             bounds, vector = techbio.process_data(data, 1)
-            instructions = techbio.compile_instructions(vector, bounds, True)
+            instructions = techbio.compile_instructions(vector, bounds, 1)
             for i in range (len(instructions)):
                     instructions[i] = instructions[i]+a
             print(instructions)

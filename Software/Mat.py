@@ -11,7 +11,7 @@ np.set_printoptions(threshold=sys.maxsize)
 ROWS = 48  # Rows of the sensor
 COLS = 48  # Columns of the sensor
 DEFAULT_PORT = '/dev/cu.usbmodem104742601'
-FIG_PATH = './Results/contour.png'
+DEFUALT_FIG_PATH = './Results/contour.png'
 
 class Mat:
     def __init__(self, port):
@@ -83,24 +83,26 @@ class Mat:
             print(tmp)
         print("\n")
 
-    def plotMatrix(self, c=COLS, r=ROWS):
+    def plotMatrix(self, c=COLS, r=ROWS, fp=DEFUALT_FIG_PATH):
         tmparray = np.zeros((r, c))
         for x in range(c): #x
             tmp = ""
             for y in range(r): #y
                 tmp = int(self.Values[x][y])
                 tmparray[x][y] = tmp
-        self.generatePlot(tmparray)
 
-    def generatePlot(Z, fp=FIG_PATH):
+        self.generatePlot(tmparray, fp)
+
+    def generatePlot(self, Z, fp=DEFUALT_FIG_PATH):
         plt.ion()
         fig, ax = plt.subplots(figsize=(5,5))
+        plt.gca().invert_yaxis()
 
         ax.contourf(np.arange(0, ROWS), np.arange(0, COLS), Z, levels=7, cmap="nipy_spectral")
 
         plt.draw()
         plt.savefig(fp)
-        plt.pause(0.0001)
+        plt.pause(0.1)
         plt.clf()
 
     def __str__(self):
