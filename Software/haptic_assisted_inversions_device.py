@@ -79,6 +79,11 @@ def process_mat_data(d):
     return h.get_actuators()
 
 if __name__ == '__main__':
-    app, data = create_app()
-    app.run(host='0.0.0.0', port=8090, threaded=True)
-    # time.sleep(0.1) # not sure if server should sleep or if it should all be on the gloves' end
+    print("Welcome to Haptic Assisted iNversions Device (HAND)")
+    print("Ctrl+C to exit")
+    try:
+        app, data = create_app()
+        app.run(host='0.0.0.0', port=8090, threaded=True)
+        # time.sleep(0.1) # not sure if server should sleep or if it should all be on the gloves' end
+    except KeyboardInterrupt:
+        print("\nProgram terminated by user.")

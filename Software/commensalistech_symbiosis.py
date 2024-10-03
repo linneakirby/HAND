@@ -20,7 +20,7 @@ from pythonosc import udp_client
 ROWS = 48  # Rows of the sensor
 COLS = 48  # Columns of the sensor
 CONTOUR = False
-
+TEST = True
 
 
 
@@ -116,16 +116,23 @@ if __name__ == "__main__":
   client = udp_client.SimpleUDPClient(args.ip, args.port)
 
   hands_array = np.load(os.getcwd() + "/Testing/hands_rot.npy")
-  data = get_mat_data(hands_array)
+  if(TEST):
+    data = get_mat_data(hands_array)
+  else:
+     data = get_mat_data()
 
+  print("Welcome to commensalisTECH symBIOsis")
   print("Ctrl+C to exit")
   try:
     while(True):
-      data = get_mat_data(hands_array)
+      if(TEST):
+        data = get_mat_data(hands_array)
+      else:
+         data = get_mat_data()
       actuators, vector = process_data(data)
       instructions = compile_instructions(vector, actuators)
       print(instructions)
-      time.sleep(1)
       send_instructions(client, instructions)
+      time.sleep(1)
   except KeyboardInterrupt:
     print("\nProgram terminated by user.")
