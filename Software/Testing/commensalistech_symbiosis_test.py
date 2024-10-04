@@ -19,7 +19,7 @@ import commensalistech_symbiosis as techbio
 
 class Commensalistech_Symbiosis_Test(unittest.TestCase):
 
-    # @unittest.skip("targeting one test")
+    @unittest.skip("targeting one test")
     def test_hand_boundaries(self):
         hands_array = np.load(os.getcwd() + "/hands_rot.npy")
         m = Mat(hands_array)
@@ -31,8 +31,8 @@ class Commensalistech_Symbiosis_Test(unittest.TestCase):
         h.find_correction_vector()
         h.select_actuators()
 
-        #print("left hand boundaries: ", h.get_left_hand().get_bounds())
-        #print("right hand boundaries: ", h.get_right_hand().get_bounds())
+        # print("left hand boundaries: ", h.get_left_hand().get_bounds())
+        # print("right hand boundaries: ", h.get_right_hand().get_bounds())
 
     @unittest.skip("targeting one test")
     #make sure an entire loop runs properly
@@ -79,7 +79,8 @@ class Commensalistech_Symbiosis_Test(unittest.TestCase):
         time.sleep(1)
         techbio.send_instructions(client, instructions)
 
-    @unittest.skip("targeting one test")
+    # this test doesn't work? something with the name maybe?
+    # @unittest.skip("targeting one test")
     def test_sound_trigger_integrated_bounds(self):  
         args = techbio.create_args()
         client = udp_client.SimpleUDPClient(args.ip, args.port)
@@ -89,11 +90,27 @@ class Commensalistech_Symbiosis_Test(unittest.TestCase):
 
         bounds, vector = techbio.process_data(data, 1)
         instructions = techbio.compile_instructions(vector, bounds, 1)
+        print(instructions)
+        time.sleep(1)
+        techbio.send_instructions(client, instructions)
+    
+    def test_sound_trigger_with_bounds(self):
+        print("testing bounds")
+        args = techbio.create_args()
+        client = udp_client.SimpleUDPClient(args.ip, args.port)
+
+        hands_array = np.load(os.getcwd() + "/hands_rot.npy")
+        data = techbio.get_mat_data(hands_array)
+
+        bounds, vector = techbio.process_data(data, 1)
+        instructions = techbio.compile_instructions(vector, bounds, 1)
+        print(instructions)
         time.sleep(1)
         techbio.send_instructions(client, instructions)
 
-    # @unittest.skip("targeting one test")
+    @unittest.skip("targeting one test")
     def test_sound_trigger_both_value_types(self):  
+        print("testing both value types")
         args = techbio.create_args()
         client = udp_client.SimpleUDPClient(args.ip, args.port)
         b = 1
@@ -149,6 +166,12 @@ class Commensalistech_Symbiosis_Test(unittest.TestCase):
             print(instructions)
             techbio.send_instructions(client, instructions)
             time.sleep(1)
+
+    def test_value_range(self):
+        hands_array = np.load(os.getcwd() + "/hands_rot.npy")
+        m = Mat(hands_array)
+        
+        print(m.Values)
 
 
 if __name__ == '__main__':

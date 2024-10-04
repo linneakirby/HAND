@@ -102,7 +102,7 @@ def get_palette(name):
         }
 
 def generate_scatter_plot(kmeans, coords_only, rcop, lcop, ideal_cop, actual_cop, figure, ax, r=ROW_SIZE, c=COL_SIZE, fp=get_filepath(), p="color"):
-    ax.invert_yaxis()
+    # ax.invert_yaxis()
 
     palette = get_palette(p)
 

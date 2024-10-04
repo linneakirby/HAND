@@ -76,7 +76,7 @@ class Mat:
         self.active_points_get_map()
 
     def printMatrix(self, c=COLS, r=ROWS):
-        for x in range(c): #x
+        for x in range(c-1, -1, -1): #x
             tmp = ""
             for y in range(r): #y
                 tmp = tmp +   hex(int(self.Values[x][y]))[-1]
@@ -96,7 +96,8 @@ class Mat:
     def generatePlot(self, Z, fp=DEFUALT_FIG_PATH):
         plt.ion()
         fig, ax = plt.subplots(figsize=(5,5))
-        plt.gca().invert_yaxis()
+        # plt.gca().invert_yaxis()
+        # plt.gca().invert_xaxis()
 
         ax.contourf(np.arange(0, ROWS), np.arange(0, COLS), Z, levels=7, cmap="nipy_spectral")
 
@@ -107,7 +108,7 @@ class Mat:
 
     def __str__(self):
         s = ""
-        for x in range(COLS): #x
+        for x in range(COLS-1, -1, -1): #x
             tmp = ""
             for y in range(ROWS): #y
                 tmp = tmp +   hex(int(self.Values[x][y]))[-1]

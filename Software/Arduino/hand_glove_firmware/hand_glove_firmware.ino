@@ -52,14 +52,14 @@ void setupWifi(){
   if(LOCAL_NETWORK == true) {
     NETWORK = "ALTIMA_MESH-F19FC8";
     PASSWORD = "92f19fc8";
-    HTTP_LEFT = "http://192.168.11.4:8090/lhand";
-    HTTP_RIGHT = "http://192.168.11.4:8090/rhand";
+    HTTP_LEFT = "http://192.168.11.2:8090/lhand";
+    HTTP_RIGHT = "http://192.168.11.2:8090/rhand";
   }
   else{ //// if using home network
     NETWORK = "THE DANGER ZONE";
     PASSWORD = "allhailqueennyxie";
-    HTTP_LEFT = "http://192.168.11.4:8090/lhand";
-    HTTP_RIGHT = "http://192.168.11.4:8090/rhand";
+    HTTP_LEFT = "http://192.168.11.2:8090/lhand";
+    HTTP_RIGHT = "http://192.168.11.2:8090/rhand";
   }
   
   WiFi.mode(WIFI_STA);

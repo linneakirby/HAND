@@ -22,14 +22,14 @@ fp = './Results/Sequence'+str(time.time_ns())
 
 class Haptic_Assisted_Inversions_Device_Mat_Test(unittest.TestCase):
     
-    # @unittest.skip("targeting one test")
+    @unittest.skip("targeting one test")
     #make sure mat data can be accessed
     def test_load_mat_data(self):
         hands_array = np.load("./hands_rot.npy")
         m = Mat(hands_array)
         self.assertIsInstance(m.Values, np.ndarray)
 
-    # @unittest.skip("targeting one test")
+    @unittest.skip("targeting one test")
     #make sure there are only 2 clusters
     def test_k_means(self):
         h = Hands()
@@ -38,7 +38,7 @@ class Haptic_Assisted_Inversions_Device_Mat_Test(unittest.TestCase):
 
         self.assertEqual(len(h.kmeans.cluster_centers_), 2)
 
-    # @unittest.skip("targeting one test")
+    @unittest.skip("targeting one test")
     #make sure can create a mat data with empty values
     def test_create_mat_zeros(self):
         hands_array = np.zeros(shape=(3,3), dtype=float)
@@ -46,14 +46,14 @@ class Haptic_Assisted_Inversions_Device_Mat_Test(unittest.TestCase):
 
         self.assertIsInstance(m.Values, np.ndarray)
 
-    # @unittest.skip("targeting one test")
+    @unittest.skip("targeting one test")
     def test_create_mat_1x3(self):
         hands_array = np.array([1.0, 2.0, 3.0])
         m = Mat(hands_array)
 
         self.assertIsInstance(m.Values, np.ndarray)
 
-    # @unittest.skip("targeting one test")
+    @unittest.skip("targeting one test")
     #make sure can create a 2d mat
     def test_create_mat_3x3(self):
         hands_array = np.array([[1.0, 1.0, 1.0], [2.0, 2.0, 2.0], [3.0, 3.0, 3.0]])
@@ -61,7 +61,7 @@ class Haptic_Assisted_Inversions_Device_Mat_Test(unittest.TestCase):
 
         self.assertIsInstance(m.Values, np.ndarray)
 
-    # @unittest.skip("targeting one test")
+    @unittest.skip("targeting one test")
     #make sure can find 2 clusters with a simple 2d mat
     def test_kmeans(self):
         hands_array = np.array([[0.0, 0.0, 0.0], [1.0, 0.0, 2.0], [0.0, 0.0, 0.0]])
@@ -71,7 +71,7 @@ class Haptic_Assisted_Inversions_Device_Mat_Test(unittest.TestCase):
 
         self.assertEqual(len(h.kmeans.cluster_centers_), 2)
 
-    # @unittest.skip("targeting one test")
+    @unittest.skip("targeting one test")
     #make sure can find and separate 2 UNORDERED hands with a simple 2d mat
     def test_isolate_hands_unordered(self):
         hands_array = np.array([[0.0, 0.0, 0.0], [1.0, 0.0, 2.0], [0.0, 0.0, 0.0]])
@@ -88,7 +88,7 @@ class Haptic_Assisted_Inversions_Device_Mat_Test(unittest.TestCase):
     
         self.assertDictEqual(rl, {(2,1): 2.0, (0,1): 1.0})
 
-    # @unittest.skip("targeting one test")
+    @unittest.skip("targeting one test")
     #make sure can separate and correctly label the hands
     def test_isolate_hands_ordered(self):
         hands_array = np.array([[0.0, 0.0, 0.0], [1.0, 0.0, 2.0], [0.0, 0.0, 0.0]])
@@ -102,7 +102,7 @@ class Haptic_Assisted_Inversions_Device_Mat_Test(unittest.TestCase):
         self.assertEqual(h.get_right_hand().get_points().get((2, 1)), 2.0)
         self.assertEqual(h.get_left_hand().get_points().get((0, 1)), 1.0)
 
-    # @unittest.skip("targeting one test")
+    @unittest.skip("targeting one test")
     #make sure the basic cop calculation function works
     def test_calculate_cop(self):
         weighted_coords = dict()
@@ -116,7 +116,7 @@ class Haptic_Assisted_Inversions_Device_Mat_Test(unittest.TestCase):
         self.assertEqual(hand_utils.calculate_cop(weighted_coords),[4.0/3.0, 1.0])
         self.assertEqual(hand_utils.calculate_cop(unweighted_coords), [1.0, 1.0])
 
-    # @unittest.skip("targeting one test")
+    @unittest.skip("targeting one test")
     #make sure it's doing all the calculations properly on a simple mat example
     def test_cop_calculations(self):
         hands_array = np.array([[0.0, 0.0, 0.0], [1.0, 0.0, 2.0], [0.0, 0.0, 0.0]])
@@ -131,7 +131,7 @@ class Haptic_Assisted_Inversions_Device_Mat_Test(unittest.TestCase):
         self.assertEqual(h.get_cop(), [4.0/3.0, 1.0])
         self.assertEqual(h.get_ideal_cop(), [1.0, 1.0])
 
-    # @unittest.skip("targeting one test")
+    @unittest.skip("targeting one test")
     #make sure the basic vector calculation function works
     def test_create_vector(self):
         t1 = [4.0/3.0, 1.0]
@@ -142,7 +142,7 @@ class Haptic_Assisted_Inversions_Device_Mat_Test(unittest.TestCase):
 
         self.assertEqual(hand_utils.create_vector(t1, t2), (tv[0], tv[1]))
 
-    # @unittest.skip("targeting one test")
+    @unittest.skip("targeting one test")
     #make sure the vector is calculated properly using a simple mat example
     def test_vector(self):
         hands_array = np.array([[0.0, 0.0, 0.0], [1.0, 0.0, 2.0], [0.0, 0.0,0.0]])
@@ -163,7 +163,7 @@ class Haptic_Assisted_Inversions_Device_Mat_Test(unittest.TestCase):
 
         self.assertEqual(h.get_correction_vector(), (tv[0], tv[1]))
 
-    # @unittest.skip("targeting one test")
+    @unittest.skip("targeting one test")
     #make sure the actuators are selected properly using a simple mat example
     def test_select_actuators(self):
         hands_array = np.array([[0.0, 0.0, 0.0], [1.0, 0.0, 2.0], [0.0, 0.0, 0.0]])
@@ -195,7 +195,7 @@ class Haptic_Assisted_Inversions_Device_Mat_Test(unittest.TestCase):
         self.assertTrue(h.get_actuators().get_l_wrist().is_on())
         self.assertFalse(h.get_actuators().get_l_left().is_on())
 
-    # @unittest.skip("targeting one test")
+    @unittest.skip("targeting one test")
     #make sure an entire loop runs properly
     def test_scatter_plot_integrated(self):
         hands_array = np.load(os.getcwd() + "/hands_rot.npy")
@@ -231,6 +231,43 @@ class Haptic_Assisted_Inversions_Device_Mat_Test(unittest.TestCase):
         self.assertFalse(h.get_actuators().get_l_wrist().is_on())
         self.assertFalse(h.get_actuators().get_l_left().is_on())
 
+    # @unittest.skip("targeting one test")
+    #make sure an entire loop runs properly
+    def test_scatter_plot_integrated2(self):
+        hands_array = np.load(os.getcwd() + "/hands_correct.npy")
+        m = Mat(hands_array)
+        #tm = np.rot90(m.Values, 2)
+        print(m)
+
+        h = Hands()
+        h.run_kmeans(hands_array)
+        h1_bounds, h2_bounds = h.isolate_hands(hands_array)
+        h.generate_cops(h1_bounds, h2_bounds)
+        h.find_correction_vector()
+        h.select_actuators()
+
+        figure, ax = plt.subplots(figsize=(5,5))
+        plt.ion()
+        script_dir = os.path.dirname(__file__)
+        results_dir = os.path.join(script_dir, 'Results/')
+        filepath = './Results/scatterCorrect'+str(time.time_ns())+'.png'
+        #sample_file_name = results_dir+'correction_'+datetime.datetime.now().strftime("%d/%m/%Y-%H:%M:%S")+'.png'
+
+        hand_utils.generate_scatter_plot(h.kmeans, h.coords_only, h.get_right_hand().get_cop(), h.get_left_hand().get_cop(), h.get_ideal_cop(), h.get_cop(), figure, ax, fp=filepath, p="bw")
+        plt.show()
+
+        print(h.get_actuators())
+
+        self.assertFalse(h.get_actuators().get_r_index().is_on())
+        self.assertFalse(h.get_actuators().get_r_right().is_on())
+        self.assertFalse(h.get_actuators().get_r_wrist().is_on())
+        self.assertFalse(h.get_actuators().get_r_left().is_on())
+        self.assertTrue(h.get_actuators().get_l_index().is_on())
+        self.assertFalse(h.get_actuators().get_l_right().is_on())
+        self.assertFalse(h.get_actuators().get_l_wrist().is_on())
+        self.assertFalse(h.get_actuators().get_l_left().is_on())
+
+    @unittest.skip("don't need to keep making dummy files")
     #make sure sequences of contour plots can save
     def test_contour_plot(self):
         hands_array = np.load(os.getcwd() + "/hands_rot.npy")
@@ -240,6 +277,15 @@ class Haptic_Assisted_Inversions_Device_Mat_Test(unittest.TestCase):
                 os.makedirs(fp)
             m.plotMatrix(fp=fp+'/contour'+str(time.time_ns())+'.png')
 
+    # @unittest.skip("targeting one test")
+    def test_contour_plot2(self):
+        hands_array = np.load(os.getcwd() + "/hands_correct.npy")
+        m = Mat(hands_array)
+        print(m)
+        filepath = './Results/contourCorrect'+str(time.time_ns())+'.png'
+        m.plotMatrix(fp=filepath)
+
+    @unittest.skip("don't need to keep making dummy files")
     def test_save_data(self):
         hands_array = np.load(os.getcwd() + "/hands_rot.npy")
         m = Mat(hands_array)
@@ -251,6 +297,7 @@ class Haptic_Assisted_Inversions_Device_Mat_Test(unittest.TestCase):
         m.plotMatrix(fp=filepath+'/plot/contour'+str(time.time_ns())+'.png')
         np.save(filepath+'/data/data'+str(time.time_ns())+'.npy', m.Values)
 
+    @unittest.skip("don't need to keep making dummy files")
     def test_save_data_sequence(self):
         hands_array = np.load(os.getcwd() + "/hands_rot.npy")
         m = Mat(hands_array)
