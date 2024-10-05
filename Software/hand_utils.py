@@ -49,7 +49,11 @@ def calculate_cop(pv_dict):
         #print("COP IS NOW: ", cop[0], ",", cop[1])
 
     for i in range(2):
-        cop[i] = cop[i]/sum(pv_dict.values())
+        s = sum(pv_dict.values())
+        if s == 0:
+            cop[i] = 0
+        else:
+            cop[i] = cop[i]/sum(pv_dict.values())
 
     #print("COP IS RETURNING AS: ", cop[0], ",", cop[1])
     return cop

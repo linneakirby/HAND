@@ -19,7 +19,7 @@ ROWS = 48  # Rows of the sensor
 COLS = 48  # Columns of the sensor
 DEFAULT_PORT = '/dev/cu.usbmodem104742601'
 DEFAULT_FOLDER = './Results/Sequence'+str(time.time_ns())
-SAVE_SEQUENCE = True
+SAVE_SEQUENCE = False
 TEST = False
 LIVEMAT = True
 

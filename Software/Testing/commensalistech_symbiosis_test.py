@@ -80,7 +80,7 @@ class Commensalistech_Symbiosis_Test(unittest.TestCase):
         techbio.send_instructions(client, instructions)
 
     # this test doesn't work? something with the name maybe?
-    # @unittest.skip("targeting one test")
+    @unittest.skip("targeting one test")
     def test_sound_trigger_integrated_bounds(self):  
         args = techbio.create_args()
         client = udp_client.SimpleUDPClient(args.ip, args.port)
@@ -94,6 +94,7 @@ class Commensalistech_Symbiosis_Test(unittest.TestCase):
         time.sleep(1)
         techbio.send_instructions(client, instructions)
     
+    @unittest.skip("targeting one test")
     def test_sound_trigger_with_bounds(self):
         print("testing bounds")
         args = techbio.create_args()
@@ -167,11 +168,21 @@ class Commensalistech_Symbiosis_Test(unittest.TestCase):
             techbio.send_instructions(client, instructions)
             time.sleep(1)
 
+    @unittest.skip("targeting one test")
     def test_value_range(self):
         hands_array = np.load(os.getcwd() + "/hands_rot.npy")
         m = Mat(hands_array)
         
         print(m.Values)
+
+    # @unittest.skip("targeting one test")
+    def test_empty_bounds(self):
+        hands_array = np.load(os.getcwd() + "/hands_rot.npy")
+        data = techbio.get_mat_data(hands_array)
+        h = Hands()
+        print(h.get_bounds())
+
+        print(h.get_left_hand().get_bounds())
 
 
 if __name__ == '__main__':

@@ -21,8 +21,8 @@ ROWS = 48  # Rows of the sensor
 COLS = 48  # Columns of the sensor
 SAVE_SEQUENCE = False
 DEFAULT_FOLDER = './Results/Sequence'+str(time.time_ns())
-TEST = True
-DATATYPE = 0 # 0 = actuators, 1 = bounds
+TEST = False
+DATATYPE = 1 # 0 = actuators, 1 = bounds
 
 def create_args():
   parser = argparse.ArgumentParser()
@@ -57,16 +57,17 @@ def add_instruction(i_list, i):
 
 def process_mat_data(d, ret_type=0):
     h = Hands()
-    if np.any(d):
-        h.run_kmeans(d)
-        h1_bounds, h2_bounds = h.isolate_hands(d)
-        h.generate_cops(h1_bounds, h2_bounds)
-        h.find_correction_vector()
-        #print(f"CoP: {h.cop} - ideal {h.ideal_cop}")
-        h.select_actuators()
+    if isinstance(d, np.ndarray):
+      h.run_kmeans(d)
+      h1_bounds, h2_bounds = h.isolate_hands(d)
+      h.generate_cops(h1_bounds, h2_bounds)
+      h.find_correction_vector()
+      #print(f"CoP: {h.cop} - ideal {h.ideal_cop}")
+      h.select_actuators()
     if(ret_type == 1):
-       #print("returning hand boundaries")
-       return h.get_bounds(), h.get_correction_vector()
+      #print("returning hand boundaries")
+      # print("BOUNDS: ", h.get_bounds())
+      return h.get_bounds(), h.get_correction_vector()
     #print("returning actuator values")
     return h.get_actuators(), h.get_correction_vector()
 
@@ -92,7 +93,7 @@ def process_data_helper(data, ret_type=0):
 def process_data(data, ret_type=DATATYPE):
   values, vector = process_data_helper(data, ret_type)
   if(ret_type == 1): #returning hand boundaries
-    #print("RETURNING HAND BOUNDARIES")
+   # print("RETURNING HAND BOUNDARIES")
     return values, vector
   # otherwise must be returning actuators
   #print("RETURNING ACTUATORS")
@@ -105,7 +106,6 @@ def get_mat_data(data = None):
 
 def compile_instructions(list1, list2, list2_is_point_pressure_values=DATATYPE):
   ret = copy_list(list1)
-
   if (list2_is_point_pressure_values == 1):
      for item in list2:
         ret.append(float(item[1]))
@@ -128,11 +128,14 @@ if __name__ == "__main__":
   print("Welcome to commensalisTECH symBIOsis")
   print("Ctrl+C to exit")
   try:
+    if(TEST):
+      data = get_mat_data(hands_array)
+    else:
+       data = get_mat_data()
     while(True):
-      if(TEST):
-        data = get_mat_data(hands_array)
-      else:
-         data = get_mat_data()
+      if not TEST:
+        data.get_matrix()
+        data.printMatrix()
       values, vector = process_data(data, DATATYPE)
       instructions = compile_instructions(vector, values, DATATYPE)
       print(instructions)

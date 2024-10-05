@@ -17,12 +17,20 @@ COL_SIZE = 48  # Columns of the sensor
 DEFAULT_PORT = '/dev/cu.usbmodem104742601'
 FIG_PATH = './Results/contour'+str(time.time)+'.png'
 
+def init_hand_bounds():
+    bounds = dict()
+    bounds.setdefault("max x", ((-1, -1), 0))[0][0]
+    bounds.setdefault("min x", ((-1, -1), 0))[0][0]
+    bounds.setdefault("max y", ((-1, -1), 0))[0][1]
+    bounds.setdefault("min y", ((-1, -1), 0))[0][1]
+    return bounds
+
 class Hand:
     def __init__(self):
         self.right = False
         self.left = False
         self.cop = [0, 0]
-        self.bounds = dict()
+        self.bounds = init_hand_bounds()
         self.points = dict()
 
     def is_right(self):
@@ -35,13 +43,19 @@ class Hand:
         self.right = True
         self.left = False
         self.cop = c
-        self.bounds = b
+        if b is None:
+            self.bounds = init_hand_bounds()
+        else:
+            self.bounds = b
 
     def set_left(self, c=[0 ,0], b=None):
         self.right = False
         self.left = True
         self.cop = c
-        self.bounds = b
+        if b is None:
+            self.bounds = init_hand_bounds()
+        else:
+            self.bounds = b
     
     def get_cop(self):
         return self.cop
@@ -95,10 +109,10 @@ class Hands:
     
     # updates a hand's bounds with new point information
     def adjust_bounds(self, bounds, point, value):
-        max_x = bounds.setdefault("max x", (point, value))[0][0]
-        min_x = bounds.setdefault("min x", (point, value))[0][0]
-        max_y = bounds.setdefault("max y", (point, value))[0][1]
-        min_y = bounds.setdefault("min x", (point, value))[0][1]
+        max_x = bounds.get("max x")[0][0]
+        min_x = bounds.get("min x")[0][0]
+        max_y = bounds.get("max y")[0][1]
+        min_y = bounds.get("min y")[0][1]
 
         if (point[0] > max_x):
             bounds.update({"max x": (point, value)})
@@ -115,8 +129,8 @@ class Hands:
         index = 0
         h1_index = 0
         h2_index = 0
-        h1_bounds = dict()
-        h2_bounds = dict()
+        h1_bounds = init_hand_bounds()
+        h2_bounds = init_hand_bounds()
         for x in range(COL_SIZE):
             for y in range(ROW_SIZE):
                 #print("Looking at: ", x, ",",y)
@@ -250,6 +264,7 @@ class Hands:
         return self.actuators
     
     def compile_bounds(self):
+        # print("left hand bounds: ", self.get_left_hand().get_bounds())
         bounds = list()
         bounds.append(self.get_left_hand().get_bounds().get("max x"))
         bounds.append(self.get_left_hand().get_bounds().get("min x"))
