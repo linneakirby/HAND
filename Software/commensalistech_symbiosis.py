@@ -19,7 +19,8 @@ from pythonosc import udp_client
 # Default parameters
 ROWS = 48  # Rows of the sensor
 COLS = 48  # Columns of the sensor
-SAVE_SEQUENCE = False
+SAVE_SEQUENCE = True
+VISUALIZATION = False
 DEFAULT_FOLDER = './Results/Sequence'+str(time.time_ns())
 TEST = False
 DATATYPE = 1 # 0 = actuators, 1 = bounds
@@ -81,6 +82,8 @@ def process_data_helper(data, ret_type=0):
       data.get_matrix()
       #print(data)
       values, vector = process_mat_data(data.Values, ret_type)
+      if VISUALIZATION:
+        data.plotMatrix(fp='./Results/contourlive.png')
       if SAVE_SEQUENCE:
         if not os.path.exists(DEFAULT_FOLDER):
           os.makedirs(DEFAULT_FOLDER+'/plot')
@@ -127,6 +130,10 @@ if __name__ == "__main__":
 
   print("Welcome to commensalisTECH symBIOsis")
   print("Ctrl+C to exit")
+  if (DATATYPE == 0):
+    print("Using actuator values as input")
+  elif (DATATYPE == 1):
+    print("Using hand boundaries as input")
   try:
     if(TEST):
       data = get_mat_data(hands_array)
