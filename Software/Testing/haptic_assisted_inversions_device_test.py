@@ -231,10 +231,10 @@ class Haptic_Assisted_Inversions_Device_Mat_Test(unittest.TestCase):
         self.assertFalse(h.get_actuators().get_l_wrist().is_on())
         self.assertFalse(h.get_actuators().get_l_left().is_on())
 
-    # @unittest.skip("targeting one test")
+    @unittest.skip("targeting one test")
     #make sure an entire loop runs properly
     def test_scatter_plot_integrated2(self):
-        hands_array = np.load(os.getcwd() + "/hands_correct.npy")
+        hands_array = np.load(os.getcwd() + "/hands_test.npy")
         m = Mat(hands_array)
         #tm = np.rot90(m.Values, 2)
         print(m)
@@ -311,6 +311,27 @@ class Haptic_Assisted_Inversions_Device_Mat_Test(unittest.TestCase):
         for i in range(3):
             m.plotMatrix(fp=filepath+'/plot/contour'+str(time.time_ns())+'.png')
             np.save(filepath+'/data/data'+str(time.time_ns())+'.npy', m.Values)
+
+    # @unittest.skip("targeting one test")
+    def test_points(self):
+        hands_array = np.load(os.getcwd() + "/hands_rot.npy")
+        m = Mat(hands_array)
+        #tm = np.rot90(m.Values, 2)
+        print(m)
+
+        h = Hands()
+        h.run_kmeans(hands_array)
+        h1_bounds, h2_bounds = h.isolate_hands(hands_array)
+        h.generate_cops(h1_bounds, h2_bounds)
+        h.find_correction_vector()
+        h.select_actuators()
+
+        right = h.get_right_hand()
+        left = h.get_left_hand()
+        print("right: ", right.get_points())
+        print("left: ", left.get_points())
+        print("right bounds: ", right.get_bounds())
+        print("left bounds: ", left.get_bounds())
 
     ### SERVER TESTS BELOW ###
     hands_array = np.load(os.getcwd() + "/hands_rot.npy")

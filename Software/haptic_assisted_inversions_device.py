@@ -20,8 +20,8 @@ COLS = 48  # Columns of the sensor
 DEFAULT_PORT = '/dev/cu.usbmodem104742601'
 DEFAULT_FOLDER = './Results/Sequence'+str(time.time_ns())
 SAVE_SEQUENCE = False
-TEST = False
-LIVEMAT = True
+TEST = True
+LIVEMAT = False
 
 def create_app(data = None):
     app = Flask(__name__)

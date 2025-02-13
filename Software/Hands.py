@@ -20,9 +20,9 @@ FIG_PATH = './Results/contour'+str(time.time)+'.png'
 def init_hand_bounds():
     bounds = dict()
     bounds.setdefault("max x", ((-1, -1), 0))[0][0]
-    bounds.setdefault("min x", ((-1, -1), 0))[0][0]
+    bounds.setdefault("min x", ((50, 50), 0))[0][0]
     bounds.setdefault("max y", ((-1, -1), 0))[0][1]
-    bounds.setdefault("min y", ((-1, -1), 0))[0][1]
+    bounds.setdefault("min y", ((50, 50), 0))[0][1]
     return bounds
 
 class Hand:
@@ -107,6 +107,7 @@ class Hands:
 
         return self.kmeans.fit(self.coords_only), self.coords_only
     
+    # should also ignore pressure values of 1
     # updates a hand's bounds with new point information
     def adjust_bounds(self, bounds, point, value):
         max_x = bounds.get("max x")[0][0]
@@ -120,7 +121,7 @@ class Hands:
             bounds.update({"min x": (point, value)})
         if (point[1] > max_y):
             bounds.update({"max y": (point, value)})
-        if (point[0] > min_y):
+        if (point[1] < min_y):
             bounds.update({"min y": (point, value)})
 
     # isolates and separates hands
